@@ -6,6 +6,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { settings } from './config/settings.config.js';
+import { PrismaFilter } from './common/filters/prisma.filter.js';
+import { ZodValidationFilter } from './common/filters/zod.filter.js';
+import { NotFoundFilter } from './common/filters/not-found.filter.js';
+import { exceptionFilter } from './common/filters/exception.filter.js';
+import { ApiResponseInterceptor } from './common/interceptors/api.interceptor.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,6 +23,16 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   app.setGlobalPrefix(settings.server.basePath);
   app.useGlobalPipes(new ZodValidationPipe());
+  app.useGlobalFilters(
+    new ZodValidationFilter(),
+    new PrismaFilter(),
+    new NotFoundFilter(),
+    new exceptionFilter(),
+  )
+  app.useGlobalInterceptors(
+    new ApiResponseInterceptor(),
+    new LoggingInterceptor(),
+  );
 
   app.enableCors({
     origin: settings.server.corsOrigin,
