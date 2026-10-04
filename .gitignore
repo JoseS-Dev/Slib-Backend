@@ -59,3 +59,4 @@ rest/
 uploads/
 allure-results/
 pnpm-workspace.yaml
+/generated/prisma
