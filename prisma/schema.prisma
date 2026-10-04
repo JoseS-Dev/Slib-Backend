@@ -11,3 +11,491 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// enum para los estados de los ejemplares fisicos de los libros
+enum PhysicalCopyStatus {
+  Disponible
+  Prestado
+  Dañado
+  Extraviado
+  Mantenimiento
+}
+
+// enum para los estados de las solicitudes de prestamos de los libros
+enum RequestStatus {
+  Pendiente
+  Aprobada
+  Rechazada
+  Cancelada
+}
+
+// enum para los estados de los prestamos de los libros
+enum LoanStatus {
+  Activo
+  Finalizado
+  Vencido
+}
+
+// enum para los estados de las multas o sanciones por retraso en la devolución de los libros
+enum FineStatus {
+  Pendiente
+  Pagada
+  Condonada
+}
+
+// enum para los estados de suspensión de los usuarios por retraso en la devolución de los libros
+enum SuspensionStatus {
+  Activa
+  Finalizada
+  Revocada
+}
+
+// enum para los tipos de incidencias por parte de los usuarios sobre los libros, prestamos y otros usuarios
+enum IncidentType {
+  Pendiente
+  En_Revision
+  Resuelta
+}
+
+// Enum para los tipos de notificaciones para los usuarios
+enum NotificationType {
+  // --- Autenticación y Cuentas ---
+  BIENVENIDA              // Al registrarse por primera vez en el sistema
+  CAMBIO_ROL              // Cuando un administrador modifica los permisos o rol del usuario
+  
+  // --- Solicitudes y Reservas ---
+  SOLICITUD_CREADA        // Cuando el usuario solicita un libro
+  SOLICITUD_APROBADA      // Cuando el recepcionista aprueba la reserva
+  SOLICITUD_RECHAZADA     // Cuando la solicitud es rechazada
+  
+  // --- Préstamos y Devoluciones ---
+  PRESTAMO_REGISTRADO     // Cuando se entrega físicamente el ejemplar
+  RECORDATORIO_DEVOLUCION // Aviso previo a que se cumpla la fecha límite
+  PRESTAMO_VENCIDO        // Cuando pasa la fecha de entrega y no se ha devuelto
+  DEVOLUCION_COMPLETADA   // Cuando el usuario entrega el libro de vuelta con éxito
+  
+  // --- Sanciones y Multas ---
+  MULTA_GENERADA          // Cuando se aplica una multa por retraso o daño
+  SUSPENSION_APLICADA     // Cuando la cuenta del usuario es suspendida
+  
+  // --- Incidencias ---
+  INCIDENCIA_REPORTADA    // Cuando un usuario o recepcionista reporta un problema
+  INCIDENCIA_ACTUALIZADA  // Cuando el administrador responde (messageAdmin) o resuelve el ticket
+  
+  // --- Catálogo y Novedades ---
+  NUEVO_LIBRO_REGISTRADO  // Aviso general o a favoritos sobre la llegada de un nuevo libro
+}
+
+// Modelo de roles del usuario
+model Role {
+  id Int @id @default(autoincrement())
+  name String @unique
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  permissions RolePermission[]
+  users User[]
+
+  @@map("roles") // Mapea el modelo a la tabla "roles" en la base de datos
+}
+
+// Modelo de permisos del usuario
+model Permission {
+  id Int @id @default(autoincrement())
+  name String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  permissions RolePermission[]
+
+  @@map("permissions") // Mapea el modelo a la tabla "permissions" en la base de datos
+}
+
+// Modelo pivote para la relación muchos a muchos entre roles y permisos
+model RolePermission {
+  roleId Int
+  permissionId Int
+
+  role Role @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId]) // Clave primaria compuesta
+  @@map("role_permissions")
+}
+
+// Modelo de usuario
+model User {
+  id Int @id @default(autoincrement())
+  roleId Int
+  firstName String
+  lastName String
+  userName String @unique
+  email String @unique
+  password String
+  failedLoginAttempts Int @default(0)
+  lockedUntil DateTime?
+  verificationToken String?
+  verificationTokenExpiry DateTime?
+  resetToken String?
+  resetTokenExpiry DateTime?
+  passwordToken String?
+  passwordTokenExpiry DateTime?
+  verified Boolean @default(false)
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  sessions Session[]
+  requests Request[]
+  loans Loan[]
+  reviews Review[]
+  fines Fine[]
+  suspensions Suspension[]
+  favorites Favorite[]
+  reports Report[]
+  incidents Incident[]
+  notifications Notification[]
+
+  @@map("users") // Mapea el modelo a la tabla "users" en la base de datos
+}
+
+// Modelo de sesiones de usuarios
+model Session {
+  id Int @id @default(autoincrement())
+  userId Int
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  refreshTokens RefreshToken[]
+
+  @@map("sessions") // Mapea el modelo a la tabla "sessions" en la base de datos
+}
+
+// Modelo de Refresh Tokens
+model RefreshToken {
+  id Int @id @default(autoincrement())
+  sessionId Int
+  token String @unique
+  isRevoked Boolean @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@map("refresh_tokens") // Mapea el modelo a la tabla "refresh_tokens" en la base de datos
+}
+
+
+// Modelo de categorias de los libros
+model Category {
+  id Int @id @default(autoincrement())
+  name String @unique
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  subcategories Subcategory[]
+  books Book[]
+
+  @@map("categories") // Mapea el modelo a la tabla "categories" en la base de datos
+}
+
+// Modelo de las subcategorias de una categoria de los libros
+model Subcategory {
+  id Int @id @default(autoincrement())
+  categoryId Int
+  name String @unique
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  category Category @relation(fields: [categoryId], references: [id])
+
+  books Book[]
+
+  @@map("subcategories") // Mapea el modelo a la tabla "subcategories" en la base de datos
+}
+
+// Modelo de los libros
+model Book {
+  id Int @id @default(autoincrement())
+  categoryId Int
+  subcategoryId Int?
+  publisherId Int?
+  title String
+  isbn String @unique
+  description String?
+  datePublished DateTime?
+  frontCoverUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  category Category @relation(fields: [categoryId], references: [id])
+  publisher Publisher? @relation(fields: [publisherId], references: [id])
+  subcategory Subcategory? @relation(fields: [subcategoryId], references: [id])
+
+  authors BookAuthor[]
+  physicalCopies PhysicalCopy[]
+  requests Request[]
+  favorites Favorite[]
+  reviews Review[]
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([publisherId])
+
+  @@map("books") // Mapea el modelo a la tabla "books" en la base de datos
+}
+
+// Modelo para los autores de los libros
+model Author {
+  id Int @id @default(autoincrement())
+  firstName String
+  lastName String
+  biography String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  books BookAuthor[]
+
+  @@map("authors") // Mapea el modelo a la tabla "authors" en la base de datos
+}
+
+// Modelo pivote para la relación muchos a muchos entre libros y autores
+model BookAuthor {
+  bookId Int
+  authorId Int
+
+  book Book @relation(fields: [bookId], references: [id])
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@id([bookId, authorId]) // Clave primaria compuesta
+  @@map("book_authors") // Mapea el modelo a la tabla "book_authors" en la base de datos
+}
+
+// Modelo de la editorial de los libros
+model Publisher {
+  id Int @id @default(autoincrement())
+  name String @unique
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  books Book[]
+
+  @@map("publishers") // Mapea el modelo a la tabla "publishers" en la base de datos
+}
+
+// Modelo de los ejemplares fisicos de los libros
+model PhysicalCopy {
+  id Int @id @default(autoincrement())
+  bookId Int
+  copyNumber String @unique
+  status PhysicalCopyStatus @default(Disponible)
+  ubication String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  book Book @relation(fields: [bookId], references: [id])
+
+  loans Loan[]
+
+  @@index([bookId])
+  @@map("physical_copies") // Mapea el modelo a la tabla "physical_copies" en la base de datos
+}
+
+// Modelo de las solicitudes de prestamos de los libros
+model Request {
+  id Int @id @default(autoincrement())
+  userId Int
+  bookId Int
+  requestDate DateTime @default(now())
+  reasonCancellation String?
+  status RequestStatus @default(Pendiente)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  loans Loan[]
+
+  @@index([userId])
+  @@index([bookId])
+  @@map("requests") // Mapea el modelo a la tabla "requests" en la base de datos
+}
+
+// Modelo de los prestamos de los libros
+model Loan {
+  id Int @id @default(autoincrement())
+  requestId Int
+  pyhsicalCopyId Int
+  recepcionistId Int
+  loanDate DateTime @default(now())
+  returnDate DateTime?
+  returnDateReal DateTime?
+  status LoanStatus @default(Activo)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  request Request @relation(fields: [requestId], references: [id])
+  physicalCopy PhysicalCopy @relation(fields: [pyhsicalCopyId], references: [id])
+  recepcionist User @relation(fields: [recepcionistId], references: [id])
+
+  loans Fine[]
+
+  @@index([requestId])
+  @@index([pyhsicalCopyId])
+  @@index([recepcionistId])
+
+  @@map("loans") // Mapea el modelo a la tabla "loans" en la base de datos
+}
+
+// Modelo de las multas o sanciones por retraso en la devolución de los libros
+model Fine {
+  id Int @id @default(autoincrement())
+  loanId Int
+  userId Int
+  amount Decimal
+  reason String?
+  status FineStatus @default(Pendiente)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  loan Loan @relation(fields: [loanId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  suspensions Suspension[]
+
+  @@index([loanId])
+  @@index([userId])
+
+  @@map("fines") // Mapea el modelo a la tabla "fines" en la base de datos
+}
+
+// Modelo de las suspensiones de los usuarios por retraso en la devolución de los libros
+model Suspension {
+  id Int @id @default(autoincrement())
+  userId Int
+  fineId Int
+  reason String
+  startDate DateTime @default(now())
+  endDate DateTime?
+  status SuspensionStatus @default(Activa)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  fine Fine @relation(fields: [fineId], references: [id])
+
+  @@index([userId])
+  @@index([fineId])
+
+  @@map("suspensions") // Mapea el modelo a la tabla "suspensions" en la base de datos
+}
+
+// Modelo de los favoritos de los usuarios
+model Favorite {
+  id Int @id @default(autoincrement())
+  userId Int
+  bookId Int
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId])
+  @@index([bookId])
+  @@index([isActive])
+
+  @@map("favorites") // Mapea el modelo a la tabla "favorites" en la base de datos
+}
+
+// Modelo de las reseñas de libros por parte de los usuarios
+model Review {
+  id Int @id @default(autoincrement())
+  userId Int
+  bookId Int
+  rating Int
+  comment String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId])
+  @@index([bookId])
+
+  @@map("reviews") // Mapea el modelo a la tabla "reviews" en la base de datos
+}
+
+// Modelo para los reportes de administración de los libros, usuarios y prestamos
+model Report {
+  id Int @id @default(autoincrement())
+  userId Int
+  name String
+  description String?
+  typeReport String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("reports") // Mapea el modelo a la tabla "reports" en la base de datos
+}
+
+// Modelo de incidencias por parte de los usuarios sobre los libros, prestamos y otros usuarios
+model Incident {
+  id Int @id @default(autoincrement())
+  userId Int
+  pyhsicalCopyId Int?
+  loanId Int?
+  title String
+  description String
+  typeIncident String
+  messageAdmin String?
+  status IncidentType @default(Pendiente)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("incidents") // Mapea el modelo a la tabla "incidents"
+}
+
+// Modelo de notificaciones para los usuarios
+model Notification {
+  id Int @id @default(autoincrement())
+  userId Int
+  title String
+  message String
+  typeNotification NotificationType
+  isRead Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notifications") // Mapea el modelo a la tabla "notifications" en la base de datos
+}
