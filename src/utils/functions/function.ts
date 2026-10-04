@@ -11,3 +11,5 @@ export function getEnvFile(env:string = process.env['NODE_ENV'] || 'development'
     const fileName = envFile[env] || '.env.development';
     return path.resolve(process.cwd(), fileName);
 }
+
+// Función para personalizar a prisma con el metodo de soft-delete
