@@ -41,9 +41,9 @@ importers:
       argon2:
         specifier: ^0.45.1
         version: 0.45.1
-      dotnet:
-        specifier: ^1.1.4
-        version: 1.1.4
+      dotenv:
+        specifier: ^18.0.5
+        version: 18.0.5
       handlebars:
         specifier: ^4.7.9
         version: 4.7.9
@@ -2064,8 +2064,10 @@ packages:
     resolution: {integrity: sha512-k8DaKGP6r1G30Lx8V4+pCsLzKr8vLmV2paqEj1Y55GdAgJuIqpRp5FfajGF8KtwMxCz9qJc6wUIJnm053d/WCw==}
     engines: {node: '>=12'}
 
-  dotnet@1.1.4:
-    resolution: {integrity: sha512-JxRiwvNLTpIkjpphFNovyCARQbrQCMZY4OP7Q61JPGCDpvE3aJnm6Fo6x0LmroGE3L7yo7unKNRZ6aViDLR/0g==}
+  dotenv@18.0.5:
+    resolution: {integrity: sha512-aBrGvt6KhjxbEnatqMWOMidftwsrCiCvqh1yNIGB9QyF0J+VcWkKDMsvYOEm7ZS82oiV+BT1sTOtIlAmUlTpwQ==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   dtrace-provider@0.8.8:
     resolution: {integrity: sha512-b7Z7cNtHPhH9EJhNNbbeqTcXB8LGFFZhq1PGgEvpeHlzd36bhbdTWoE/Ba/YguqpBSlAPKnARWhVlhunCMwfxg==}
@@ -3400,9 +3402,6 @@ packages:
         optional: true
       typescript:
         optional: true
-
-  promise@8.3.0:
-    resolution: {integrity: sha512-rZPNPKTOYVNEEKFaq1HqTgOwZD+4/YHS5ukLzQCypkj+OkYx7iv0mA91lJlpPPZ8vMau3IIGj5Qlwrx+8iiSmg==}
 
   proper-lockfile@4.1.2:
     resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
@@ -6136,11 +6135,7 @@ snapshots:
 
   dotenv@17.4.1: {}
 
-  dotnet@1.1.4:
-    dependencies:
-      commander: 4.1.1
-      minimist: 1.2.8
-      promise: 8.3.0
+  dotenv@18.0.5: {}
 
   dtrace-provider@0.8.8:
     dependencies:
@@ -7639,10 +7634,6 @@ snapshots:
       - magicast
       - react
       - react-dom
-
-  promise@8.3.0:
-    dependencies:
-      asap: 2.0.6
 
   proper-lockfile@4.1.2:
     dependencies:
