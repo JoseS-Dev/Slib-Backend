@@ -47,7 +47,7 @@ export class RolesService {
     return role;
   }
 
-  async findAll(page: number = 1, limit: number = 10) : Promise<{data: Role[], total: number}> {
+  async findAll(page: number = 1, limit: number = 10) : Promise<{data: Role[], total: number, totalPages: number}> {
     const [roles, total] = await Promise.all([
       this.prisma.extended.role.findMany({
         skip: (page - 1) * limit,
@@ -63,7 +63,8 @@ export class RolesService {
       }),
       this.prisma.extended.role.count()
     ]);
-    return { data: roles, total };
+    const totalPages = Math.ceil(total / limit);
+    return { data: roles, total, totalPages };
   }
 
   async findOne(id: number) : Promise<Role> {
