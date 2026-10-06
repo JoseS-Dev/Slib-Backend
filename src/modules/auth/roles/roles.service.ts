@@ -99,7 +99,8 @@ export class RolesService {
         where: { id },
         data: {
           name: updateRoleDto.name ?? existingRole.name,
-          isDefault: updateRoleDto.isDefault ?? false
+          isDefault: updateRoleDto.isDefault ?? false,
+          updatedAt: new Date()
         }
       });
       // Si se van a actualizar los permisos del rol, se eliminan los permisos existentes y se agregan los nuevos
