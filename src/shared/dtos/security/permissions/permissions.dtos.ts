@@ -1,9 +1,9 @@
 import z from 'zod';
 import { createZodDto } from "nestjs-zod";
-import { roleSchema } from "../roles/roles.dtos.js";
+import { roleSchema } from "../../auth/roles/roles.dtos.js";
 
 // Defino el esquema base de los permisos
-const permissionSchema = z.object({
+export const permissionSchema = z.object({
     id: roleSchema.shape.id,
     name: roleSchema.shape.name,
     description: z.string().optional()
