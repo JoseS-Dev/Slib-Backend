@@ -55,7 +55,10 @@ export class PermissionsService {
     // Se actualiza el permiso en cuestión
     const updatedPermission = await this.prisma.permission.update({
       where: {id},
-      data: updatePermissionDto
+      data: {
+        ...updatePermissionDto,
+        updatedAt: new Date()
+      }
     });
     if(!updatedPermission) throw new BadRequestException('No se pudo actualizar el permiso')
     return updatedPermission;
