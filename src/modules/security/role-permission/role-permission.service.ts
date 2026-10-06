@@ -25,7 +25,7 @@ export class RolePermissionService {
     })
   }
 
-  async findAll(page: number = 1, limit: number = 10) : Promise<{data: RolePermission[], total: number}> {
+  async findAll(page: number = 1, limit: number = 10) : Promise<{data: RolePermission[], total: number, totalPages: number}> {
     const [rolePermissions, total] = await Promise.all([
       this.prisma.rolePermission.findMany({
         skip: (page - 1) * limit,
@@ -34,10 +34,11 @@ export class RolePermissionService {
       }),
       this.prisma.rolePermission.count()
     ])
-    return {data: rolePermissions, total}
+    const totalPages = Math.ceil(total / limit);
+    return {data: rolePermissions, total, totalPages}
   }
 
-  async findAllByRole(roleId: number, page: number = 1, limit: number = 10) : Promise<{data: RolePermission[], total: number}> {
+  async findAllByRole(roleId: number, page: number = 1, limit: number = 10) : Promise<{data: RolePermission[], total: number, totalPages: number}> {
     // Se verifica que exista el rol
     const existingRol = await this.prisma.extended.role.findUnique({
       where: {id: roleId}
@@ -55,7 +56,8 @@ export class RolePermissionService {
         where: {roleId}
       })
     ])
-    return {data: rolePermissions, total}
+    const totalPages = Math.ceil(total / limit);
+    return {data: rolePermissions, total, totalPages}
   }
 
 

@@ -25,7 +25,7 @@ export class PermissionsService {
   async findAll(
     page: number = 1,
     limit: number = 10
-  ) : Promise<{data: Permission[], total: number}> {
+  ) : Promise<{data: Permission[], total: number, totalPages: number}> {
     const [permissions, total] = await Promise.all([
       this.prisma.extended.permission.findMany({
         skip: (page - 1) * limit,
@@ -34,7 +34,8 @@ export class PermissionsService {
       }),
       this.prisma.extended.permission.count()
     ])
-    return {data: permissions, total}
+    const totalPages = Math.ceil(total / limit);
+    return {data: permissions, total, totalPages}
   }
 
   async findOne(id: number) : Promise<Permission> {
