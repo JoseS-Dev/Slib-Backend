@@ -90,7 +90,9 @@ enum NotificationType {
 model Role {
   id Int @id @default(autoincrement())
   name String @unique
+  isDefault Boolean @default(false)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   deletedAt DateTime?
 
   permissions RolePermission[]
