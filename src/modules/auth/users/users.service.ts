@@ -155,13 +155,13 @@ export class UsersService {
     return updatedUser;
   }
 
-  async remove(id: number) : Promise<string> {
+  async remove(id: number) : Promise<{message: string}> {
     // Se verifica que exista el usuario
     const existingUser = await this.findOne(id);
     if(!existingUser) throw new NotFoundException('No existe dicho usuario');
     // Se elimina el usuario en cuestión
     const deletedUser = await this.prisma.extended.user.softDelete(id);
     if(!deletedUser) throw new BadRequestException('No se pudo eliminar el usuario');
-    return 'Usuario eliminado correctamente';
+    return {message: 'Usuario eliminado correctamente'};
   }
 }

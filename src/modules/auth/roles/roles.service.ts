@@ -132,7 +132,7 @@ export class RolesService {
     return role;
   }
 
-  async remove(id: number) : Promise<string> {
+  async remove(id: number) : Promise<{message: string}> {
     // Se verifica que exista el rol a eliminar
     const existingRole = await this.findOne(id);
     if(!existingRole) throw new NotFoundException('Rol no encontrado');
@@ -147,6 +147,6 @@ export class RolesService {
       return deleted;
     });
     if(!deletedRole) throw new BadRequestException('No se pudo eliminar el rol');
-    return 'Rol eliminado correctamente';
+    return {message: 'Rol eliminado correctamente'};
   }
 }

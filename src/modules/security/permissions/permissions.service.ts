@@ -65,13 +65,13 @@ export class PermissionsService {
     return updatedPermission;
   }
 
-  async remove(id: number) : Promise<string> {
+  async remove(id: number) : Promise<{message: string}> {
     // Se verifica que exista el permiso
     const existingPermission = await this.findOne(id);
     if(!existingPermission) throw new NotFoundException('No existe dich permiso');
     // Si existe sel elimina
     const deletedPermission = await this.prisma.extended.permission.softDelete(id);
     if(!deletedPermission) throw new BadRequestException("No se pudo eliminar el permiso");
-    return 'Permiso eliminado exitosamente'
+    return {message: 'Permiso eliminado exitosamente'}
   }
 }

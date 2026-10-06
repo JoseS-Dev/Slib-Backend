@@ -61,7 +61,7 @@ export class RolePermissionService {
   }
 
 
-  async remove(roleId: number, permissionId: number) : Promise<string> {
+  async remove(roleId: number, permissionId: number) : Promise<{message: string}> {
     // Se verifica que exista la relación entre el rol y el permiso
     const existingRolePermission = await this.prisma.rolePermission.findUnique({
       where: {
@@ -82,6 +82,6 @@ export class RolePermissionService {
       }
     });
     if(!deletedRolePermission) throw new BadRequestException('No se pudo eliminar la relación entre el rol y el permiso especificados');
-    return 'Relación entre rol y permiso eliminada exitosamente';
+    return {message: 'Relación entre rol y permiso eliminada exitosamente'}
   }
 }
