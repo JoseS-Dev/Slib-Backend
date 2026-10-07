@@ -37,7 +37,11 @@ export class RolesService {
         include: {
           permissions: {
             include: {
-              permission: true
+              permission: {
+                omit: {
+                  deletedAt: true,
+                }
+              }
             }
           }
         }
@@ -53,10 +57,17 @@ export class RolesService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        omit: {
+          deletedAt: true
+        },
         include: {
           permissions: {
             include: {
-              permission: true
+              permission: {
+                omit: {
+                  deletedAt: true,
+                }
+              }
             }
           }
         }
@@ -70,10 +81,17 @@ export class RolesService {
   async findOne(id: number) : Promise<Role> {
     const role = await this.prisma.extended.role.findUnique({
       where: { id },
+      omit: {
+          deletedAt: true
+      },
       include: {
         permissions: {
           include: {
-            permission: true
+            permission: {
+              omit: {
+                deletedAt: true,
+              }
+            }
           }
         }
       }
@@ -119,10 +137,17 @@ export class RolesService {
       }
       return tx.role.findUnique({
         where: { id: updatedRole.id },
+        omit: {
+          deletedAt: true
+        },
         include: {
           permissions: {
             include: {
-              permission: true
+              permission: {
+                omit: {
+                  deletedAt: true,
+                }
+              }
             }
           }
         }

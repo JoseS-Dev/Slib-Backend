@@ -72,7 +72,18 @@ export class UsersService {
       this.prisma.extended.user.findMany({
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: {createdAt: 'desc'}
+        orderBy: {createdAt: 'desc'},
+        omit: {
+          password: true,
+          lockedUntil: true,
+          verificationToken: true,
+          verificationTokenExpiry: true,
+          resetToken: true,
+          resetTokenExpiry: true,
+          passwordToken: true,
+          passwordTokenExpiry: true,
+          deletedAt: true
+        }
       }),
       this.prisma.extended.user.count()
     ]);
@@ -88,6 +99,20 @@ export class UsersService {
             {lockedUntil: null},
             {isActive: true}
           ]
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {createdAt: 'desc'},
+        omit: {
+          password: true,
+          lockedUntil: true,
+          verificationToken: true,
+          verificationTokenExpiry: true,
+          resetToken: true,
+          resetTokenExpiry: true,
+          passwordToken: true,
+          passwordTokenExpiry: true,
+          deletedAt: true
         }
       }),
       this.prisma.extended.user.count({
@@ -105,7 +130,18 @@ export class UsersService {
 
   async findOne(id: number) : Promise<User> {
     const existingUser = await this.prisma.extended.user.findUnique({
-      where: {id}
+      where: {id},
+      omit: {
+        password: true,
+        lockedUntil: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+        passwordToken: true,
+        passwordTokenExpiry: true,
+        deletedAt: true
+      }
     });
     if(!existingUser) throw new NotFoundException('No existe dicho usuario');
     return existingUser;

@@ -30,7 +30,19 @@ export class RolePermissionService {
       this.prisma.rolePermission.findMany({
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: {roleId: 'asc'}
+        orderBy: {roleId: 'asc'},
+        include: {
+          permission: {
+            omit: {
+              deletedAt: true
+            }
+          },
+          role: {
+            omit: {
+              deletedAt: true
+            }
+          }
+        }
       }),
       this.prisma.rolePermission.count()
     ])
@@ -50,7 +62,19 @@ export class RolePermissionService {
         where: {roleId},
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: {permissionId: 'asc'}
+        orderBy: {permissionId: 'asc'},
+        include: {
+          permission: {
+            omit: {
+              deletedAt: true
+            }
+          },
+          role: {
+            omit: {
+              deletedAt: true
+            }
+          }
+        }
       }),
       this.prisma.rolePermission.count({
         where: {roleId}

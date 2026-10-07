@@ -30,7 +30,10 @@ export class PermissionsService {
       this.prisma.extended.permission.findMany({
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: {createdAt: 'desc'}
+        orderBy: {createdAt: 'desc'},
+        omit: {
+          deletedAt: true
+        }
       }),
       this.prisma.extended.permission.count()
     ])
@@ -40,7 +43,10 @@ export class PermissionsService {
 
   async findOne(id: number) : Promise<Permission> {
     const existingPermission = await this.prisma.extended.permission.findUnique({
-      where: {id}
+      where: {id},
+      omit: {
+          deletedAt: true
+      }
     });
     if(!existingPermission) throw new NotFoundException('No existe dicho permiso')
     return existingPermission
@@ -59,6 +65,9 @@ export class PermissionsService {
       data: {
         ...updatePermissionDto,
         updatedAt: new Date()
+      },
+      omit: {
+          deletedAt: true
       }
     });
     if(!updatedPermission) throw new BadRequestException('No se pudo actualizar el permiso')
