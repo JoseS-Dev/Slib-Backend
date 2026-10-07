@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/root.module.js';
 import { MailerModule } from './modules/mailer/mailer.module.js';
 import { JwtModuleGlobal } from './modules/jwt/jwt.module.js';
 import { SecurityModule } from './modules/security/root.module.js';
+import { CategoriesModule } from './modules/categories/root.module.js';
 import type { NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { CorrelationMiddleware } from './common/middlewares/correlation.middleware.js';
 
@@ -15,7 +16,8 @@ import { CorrelationMiddleware } from './common/middlewares/correlation.middlewa
     PrismaModule,
     MailerModule,
     AuthModule,
-    SecurityModule
+    SecurityModule,
+    CategoriesModule
   ],
   controllers: [AppController],
   providers: [AppService],
