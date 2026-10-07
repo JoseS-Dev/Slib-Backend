@@ -43,6 +43,9 @@ export class CategoryService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {createdAt: 'desc'},
+        omit: {
+          deletedAt: true,
+        },
         include: {
           subcategories: true,
         }
@@ -60,6 +63,9 @@ export class CategoryService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {createdAt: 'desc'},
+        omit: {
+          deletedAt: true,
+        },
         include: {
           subcategories: true,
         }
@@ -75,6 +81,9 @@ export class CategoryService {
   async findOne(id: number) : Promise<Category> {
     const category = await this.prisma.extended.category.findUnique({
       where: { id },
+      omit: {
+          deletedAt: true,
+      },
       include: {
         subcategories: true,
       }

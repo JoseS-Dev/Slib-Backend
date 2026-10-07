@@ -27,6 +27,9 @@ export class SubcategoryService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {createdAt: 'desc'},
+        omit: {
+          deletedAt: true,
+        }
       }),
       this.prisma.extended.subcategory.count(),
     ]);
@@ -41,6 +44,9 @@ export class SubcategoryService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {createdAt: 'desc'},
+        omit: {
+          deletedAt: true,
+        }
       }),
       this.prisma.extended.subcategory.count({
         where: { isActive: true },
@@ -62,6 +68,9 @@ export class SubcategoryService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: {createdAt: 'desc'},
+        omit: {
+          deletedAt: true,
+        }
       }),
       this.prisma.extended.subcategory.count({
         where: { categoryId },
@@ -74,6 +83,9 @@ export class SubcategoryService {
   async findOne(id: number) : Promise<Subcategory> {
     const subcategory = await this.prisma.extended.subcategory.findUnique({
       where: { id },
+      omit: {
+          deletedAt: true,
+      }
     });
     if(!subcategory) throw new NotFoundException('La subcategoria no existe');
     return subcategory;
