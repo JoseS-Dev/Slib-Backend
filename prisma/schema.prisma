@@ -242,6 +242,8 @@ model Book {
   description String?
   datePublished DateTime?
   frontCoverUrl String?
+  mimeType String?
+  fileSize Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
