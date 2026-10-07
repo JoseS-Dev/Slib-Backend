@@ -1,4 +1,7 @@
 import path from 'path';
+import fs from 'fs';
+import Handlebars from 'handlebars';
+import { BadRequestException } from '@nestjs/common';
 import type {SeedResult} from '../../database/interfaces/seed-result.interface.js';
 
 // Función para colocar el .env correcto dependiendo del entorno
@@ -49,3 +52,21 @@ export const printHelp = (): void => {
       usuario@slib.com    / secreto1   (rol Usuario)
     `);
 };
+
+// Función para compilar los templates de Handlebars
+export function compileTemplate(templatePath: string, context: any) {
+  const fileName = `${templatePath}.hbs`;
+  const filePath = path.join(process.cwd(), 
+    'src', 'modules', 'mailer', 'templates'
+  , fileName);
+  // Se verifica que exista el archivo del template
+  if (!fs.existsSync(filePath)) {
+    throw new BadRequestException(
+      `El archivo de template ${fileName} no existe en la ruta ${filePath}`,
+    );
+  }
+  // Si existe, se lee el contenido del archivo y se compila con Handlebars
+  const templateContent = fs.readFileSync(filePath, 'utf-8');
+  const template = Handlebars.compile(templateContent);
+  return template(context);
+}
