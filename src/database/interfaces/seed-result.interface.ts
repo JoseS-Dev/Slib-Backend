@@ -5,6 +5,8 @@ export interface SeederCounts {
   users: number;
   sessions: number;
   refreshTokens: number;
+  categories: number;
+  subcategories: number;
 }
 
 export interface SeedResult {
@@ -23,4 +25,6 @@ export const emptySeederCounts = (): SeederCounts => ({
   users: 0,
   sessions: 0,
   refreshTokens: 0,
+  categories: 0,
+  subcategories: 0,
 });

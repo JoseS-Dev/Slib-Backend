@@ -7,6 +7,8 @@ import { RolesSeeder } from './seeders/roles.seeder.js';
 import { RolePermissionSeeder } from './seeders/role-permission.seeder.js';
 import { UsersSeeder } from './seeders/users.seeder.js';
 import { SessionsSeeder } from './seeders/sessions.seeder.js';
+import { CategoriesSeeder } from './seeders/categories.seeder.js';
+import { SubcategoriesSeeder } from './seeders/subcategories.seeder.js';
 import { SeedServices } from './seed.services.js';
 
 
@@ -45,6 +47,16 @@ import { SeedServices } from './seed.services.js';
       inject: [PrismaService],
     },
     {
+      provide: CategoriesSeeder,
+      useFactory: (prisma: PrismaService) => new CategoriesSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: SubcategoriesSeeder,
+      useFactory: (prisma: PrismaService) => new SubcategoriesSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
       provide: SeedServices,
       useFactory: (
         permissionsSeeder: PermissionsSeeder,
@@ -52,6 +64,8 @@ import { SeedServices } from './seed.services.js';
         rolePermissionSeeder: RolePermissionSeeder,
         usersSeeder: UsersSeeder,
         sessionsSeeder: SessionsSeeder,
+        categoriesSeeder: CategoriesSeeder,
+        subcategoriesSeeder: SubcategoriesSeeder,
       ) =>
         new SeedServices(
           permissionsSeeder,
@@ -59,6 +73,8 @@ import { SeedServices } from './seed.services.js';
           rolePermissionSeeder,
           usersSeeder,
           sessionsSeeder,
+          categoriesSeeder,
+          subcategoriesSeeder,
         ),
       inject: [
         PermissionsSeeder,
@@ -66,6 +82,8 @@ import { SeedServices } from './seed.services.js';
         RolePermissionSeeder,
         UsersSeeder,
         SessionsSeeder,
+        CategoriesSeeder,
+        SubcategoriesSeeder,
       ],
     },
   ],

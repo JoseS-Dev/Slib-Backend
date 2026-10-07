@@ -6,6 +6,8 @@ import { RolesSeeder } from './seeders/roles.seeder.js';
 import { RolePermissionSeeder } from './seeders/role-permission.seeder.js';
 import { UsersSeeder } from './seeders/users.seeder.js';
 import { SessionsSeeder } from './seeders/sessions.seeder.js';
+import { CategoriesSeeder } from './seeders/categories.seeder.js';
+import { SubcategoriesSeeder } from './seeders/subcategories.seeder.js';
 
 @Injectable()
 export class SeedServices {
@@ -17,12 +19,14 @@ export class SeedServices {
     private readonly rolePermissionSeeder: RolePermissionSeeder,
     private readonly usersSeeder: UsersSeeder,
     private readonly sessionsSeeder: SessionsSeeder,
+    private readonly categoriesSeeder: CategoriesSeeder,
+    private readonly subcategoriesSeeder: SubcategoriesSeeder,
   ) {}
 
   /**
-   * Ejecuta la semilla completa de los módulos auth y security.
+   * Ejecuta la semilla completa de los módulos auth, security y categories.
    * El orden respeta las claves foráneas: permisos → roles → role-permission
-   * → usuarios → sesiones → refresh tokens.
+   * → usuarios → categorías → subcategorías → sesiones → refresh tokens.
    */
   async run(): Promise<SeedResult> {
     const startedAt = new Date();
@@ -51,7 +55,17 @@ export class SeedServices {
       counts.users = users.length;
       this.logger.log(`Usuarios: ${counts.users}`);
 
-      // 5. Sesiones y refresh tokens
+      // 5. Categorías
+      const categories = await this.categoriesSeeder.run();
+      counts.categories = categories.length;
+      this.logger.log(`Categorías: ${counts.categories}`);
+
+      // 6. Subcategorías (dependen de categorías)
+      const subcategories = await this.subcategoriesSeeder.run(categories);
+      counts.subcategories = subcategories.length;
+      this.logger.log(`Subcategorías: ${counts.subcategories}`);
+
+      // 7. Sesiones y refresh tokens
       const sessions = await this.sessionsSeeder.run(users, {
         sessionProbability: 0.6,
         maxSessionsPerUser: 2,
@@ -101,6 +115,8 @@ export class SeedServices {
       counts.sessions = sessionResult.sessions;
       counts.refreshTokens = sessionResult.refreshTokens;
 
+      counts.subcategories = await this.subcategoriesSeeder.clear();
+      counts.categories = await this.categoriesSeeder.clear();
       counts.users = await this.usersSeeder.clear();
       counts.rolePermissions = await this.rolePermissionSeeder.clear();
       counts.roles = await this.rolesSeeder.clear();
@@ -109,7 +125,8 @@ export class SeedServices {
       this.logger.log(
         `Limpieza completada. Permisos: ${counts.permissions}, ` +
         `Roles: ${counts.roles}, RolePermission: ${counts.rolePermissions}, ` +
-        `Usuarios: ${counts.users}, Sesiones: ${counts.sessions}, ` +
+        `Usuarios: ${counts.users}, Categorías: ${counts.categories}, ` +
+        `Subcategorías: ${counts.subcategories}, Sesiones: ${counts.sessions}, ` +
         `RefreshTokens: ${counts.refreshTokens}`,
       );
     } catch (error) {
