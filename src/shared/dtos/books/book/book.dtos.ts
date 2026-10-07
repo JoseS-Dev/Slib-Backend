@@ -7,7 +7,7 @@ export const BookSchema = z.object({
     subcategoryId: z.number().int().positive().optional(),
     publisherId: z.number().int().positive().optional(),
     title: z.string().min(1).max(255),
-    isbn: z.string().min(10).max(13).optional(),
+    isbn: z.string().min(10).max(13),
     description: z.string().max(1000).optional(),
     datePublished: z.date().optional(),
     frontCoverUrl: z.string().url().optional(),

@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import Handlebars from 'handlebars';
 import { BadRequestException } from '@nestjs/common';
+import { settings } from '../../config/settings.config.js';
 import type {SeedResult} from '../../database/interfaces/seed-result.interface.js';
 
 // Función para colocar el .env correcto dependiendo del entorno
@@ -69,4 +70,19 @@ export function compileTemplate(templatePath: string, context: any) {
   const templateContent = fs.readFileSync(filePath, 'utf-8');
   const template = Handlebars.compile(templateContent);
   return template(context);
+}
+
+// Función para que resuelve la ruta absoluta de una rchivo guardado
+export async function deleteStoredFile(storedPath: string): Promise<void> {
+  const uploadDir = path.resolve(process.cwd(), settings.uploads.uploadsDir);
+  const targetPath = path.resolve(uploadDir, storedPath);
+  if (
+    !targetPath.startsWith(uploadDir + path.sep) &&
+    targetPath !== uploadDir
+  ) {
+    throw new BadRequestException('Ruta de archivo inválida');
+  }
+  if (fs.existsSync(targetPath)) {
+    await fs.promises.unlink(targetPath);
+  }
 }
