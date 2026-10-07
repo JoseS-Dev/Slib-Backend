@@ -14,23 +14,27 @@ export class MulterInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
 
-    // Se obtiene la configuración de multer
-    const multerOptions = this.multerFactory.createMulterOptions();
-    const upload = multer(multerOptions).single('file');
+    const contentType = (req.headers['content-type'] ?? '').toLowerCase();
+    const isMultipart = contentType.startsWith('multipart/form-data');
 
-    await new Promise((resolve, reject) => {
-      upload(req, req.res, (err) => {
-        if (err) {
-          reject(
-            new BadRequestException(
-              `Error al subir el archivo: ${err.message}`,
-            ),
-          );
-        } else {
-          resolve(true);
-        }
+    if (isMultipart) {
+      const multerOptions = this.multerFactory.createMulterOptions();
+      const upload = multer(multerOptions).single('file');
+
+      await new Promise((resolve, reject) => {
+        upload(req, req.res, (err) => {
+          if (err) {
+            reject(
+              new BadRequestException(
+                `Error al subir el archivo: ${err.message}`,
+              ),
+            );
+          } else {
+            resolve(true);
+          }
+        });
       });
-    });
+    }
 
     return next.handle();
   }

@@ -1,12 +1,12 @@
-import { 
+import {
   Controller,
-  Res, 
-  Get, 
-  Post, 
-  Body, 
+  Res,
+  Get,
+  Post,
+  Body,
   Patch,
-  Query, 
-  Param, 
+  Query,
+  Param,
   Delete,
   Headers,
   HttpCode,
@@ -14,7 +14,7 @@ import {
   ParseIntPipe,
   UploadedFile,
   UseInterceptors,
-  HttpException 
+  HttpException
 } from '@nestjs/common';
 import { BookService } from './book.service.js';
 import { CreateBookDto } from './dto/create-book.dto.js';
@@ -43,7 +43,7 @@ export class BookController {
     if(file){
       const data = {
         ...createBookDto,
-        icon: this.storageService.getRelativeFilePathInSubfolder(
+        frontCoverUrl: this.storageService.getRelativeFilePathInSubfolder(
           folder,
           file.filename
         ),
@@ -118,21 +118,21 @@ export class BookController {
   @HttpCode(HttpStatus.OK)
   @Roles("Administrador", "Recepcionista")
   async update(
-    @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string, @Body() 
-    updateBookDto: UpdateBookDto,
+    @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string,
+    @Body() updateBookDto: UpdateBookDto,
     @UploadedFile() file: Express.Multer.File,
     @Headers('x-upload') folder: string
   ) {
     if(file){
       const data = {
         ...updateBookDto,
-        icon: this.storageService.getRelativeFilePathInSubfolder(
+        frontCoverUrl: this.storageService.getRelativeFilePathInSubfolder(
           folder,
           file.filename
         ),
         mimeType: file.mimetype,
         fileSize: file.size,
-      }
+      };
       return this.bookService.update(+id, data);
     }
     return this.bookService.update(+id, updateBookDto);
