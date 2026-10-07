@@ -14,6 +14,6 @@ export const userSchema = z.object({
 });
 
 export const createUserDto = userSchema.omit({id: true, roleId: true});
-export const createUserAdminDto = userSchema.omit({id: true});
+export const createUserAdminDto = userSchema.omit({id: true, password: true});
 
 export const updateUserDto = userSchema.partial()

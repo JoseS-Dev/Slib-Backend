@@ -12,28 +12,33 @@ import {
   Query,
   ParseIntPipe 
 } from '@nestjs/common';
-import { settings } from '../../../config/settings.config.js';
 import { UsersService } from './users.service.js';
-import { CreateUserDto, CreateAdminUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { settings } from '../../../config/settings.config.js';
+import { Roles } from '../../../common/decorators/roles.decorator.js';
+import { Public } from '../../../common/decorators/public.decorator.js';
+import { CreateUserDto, CreateAdminUserDto } from './dto/create-user.dto.js';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Post('admin')
+  @Roles('Administrador')
   @HttpCode(HttpStatus.CREATED)
   async createAdmin(@Body() createAdminUserDto: CreateAdminUserDto) {
     return this.usersService.createAdmin(createAdminUserDto);
   }
 
   @Get()
+  @Roles('Administrador', 'Recepcionista')
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
@@ -46,6 +51,7 @@ export class UsersController {
 
   @Get('active')
   @HttpCode(HttpStatus.OK)
+  @Roles('Administrador', 'Recepcionista')
   async findAllByActive(
     @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
     @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
@@ -56,6 +62,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string) {
     return this.usersService.findOne(+id);
@@ -63,6 +70,7 @@ export class UsersController {
 
   @Patch('status/:id')
   @HttpCode(HttpStatus.OK)
+  @Roles('Administrador')
   async changeStatus(
     @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string,
     @Body('isActive') isActive: boolean
@@ -71,6 +79,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
@@ -78,6 +87,7 @@ export class UsersController {
 
 
   @Delete(':id')
+  @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string) {
     return this.usersService.remove(+id);

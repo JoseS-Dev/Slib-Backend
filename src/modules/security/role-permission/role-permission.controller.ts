@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { settings } from '../../../config/settings.config.js';
 import { RolePermissionService } from './role-permission.service.js';
+import { Roles } from '../../../common/decorators/roles.decorator.js';
 import { CreateRolePermissionDto } from './dto/create-role-permission.dto.js';
 
 @Controller('role-permission')
@@ -20,12 +21,14 @@ export class RolePermissionController {
   constructor(private readonly rolePermissionService: RolePermissionService) {}
 
   @Post()
+  @Roles('Administrador')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createRolePermissionDto: CreateRolePermissionDto) {
     return this.rolePermissionService.create(createRolePermissionDto);
   }
 
   @Get()
+  @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async findAll(
     @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
@@ -37,6 +40,7 @@ export class RolePermissionController {
   }
 
   @Get('role/:roleId')
+  @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async findAllByRole(
     @Param('roleId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) roleId: number,
@@ -50,6 +54,7 @@ export class RolePermissionController {
 
 
   @Delete('/role/:roleId/permission/:permissionId')
+  @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async remove(
     @Param('roleId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) roleId: number,

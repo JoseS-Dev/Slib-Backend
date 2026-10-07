@@ -1,4 +1,5 @@
 import argon2 from 'argon2';
+import crypton from 'crypto';
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity.js';
 import { CreateUserDto, CreateAdminUserDto } from './dto/create-user.dto.js';
@@ -54,12 +55,12 @@ export class UsersService {
       }
     });
     if(existingUser) throw new ConflictException('Ya existe un usuario con el mismo correo o nombre de usuario');
-    // Si no existe, se crea el usuario
-    const hashedPassword = await argon2.hash(createAdminUserDto.password);
+    const temporaryPassword = crypton.randomBytes(32).toString('hex');
+    const hashedPassword = await argon2.hash(temporaryPassword);
     const newUser = await this.prisma.user.create({
       data: {
         ...createAdminUserDto,
-        password: hashedPassword,
+        password: hashedPassword
       }
     });
     if(!newUser) throw new BadRequestException('No se pudo crear el usuario');
