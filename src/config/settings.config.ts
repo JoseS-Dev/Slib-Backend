@@ -10,6 +10,7 @@ export const settings = {
         maxPagination: env.MAX_PAGINATION,
         apiKey: env.RESEND_API_KEY,
         methodsAllowed: env.METHODS_ALLOWED,
+        emailFrom: env.EMAIL_FROM,
     },
     security: {
         jwtSecret: env.JWT_SECRET,

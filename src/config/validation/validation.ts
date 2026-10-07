@@ -34,6 +34,7 @@ export const env = createEnv({
         LIMIT_EMAIL_WINDOWS_MS: z.coerce.number().default(60000),
         LIMIT_EMAIL_MAX: z.coerce.number().default(5),
         RESEND_API_KEY: z.string().min(1),
+        EMAIL_FROM: z.string().default('Slib <onboarding@resend.dev>'),
         UPLOADS_DIR: z.string().default('uploads'),
         MAX_FILE_SIZE: z.coerce.number().default(10485760),
         ALLOWED_FILE_TYPES: z.string().default('image/jpeg,image/png,image/gif,application/pdf'),

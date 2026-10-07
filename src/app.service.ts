@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from './prisma/prisma.service.js';
 
 @Injectable()
 export class AppService {
+  constructor(private readonly prismaService: PrismaService) {}
+
   async root(): Promise<Object> {
     return {
       message: "API SLIB",
@@ -26,6 +29,10 @@ export class AppService {
         rss: process.memoryUsage().rss,
         external: process.memoryUsage().external,
         heapTotal: process.memoryUsage().heapTotal,
+      },
+      database: {
+        status: (await this.prismaService.$queryRaw`SELECT 1`) ? "healthy" : "unhealthy",
+        timestamp: new Date().toISOString(),
       }
     }
   }
