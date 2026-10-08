@@ -57,6 +57,13 @@ enum IncidentType {
   Resuelta
 }
 
+// enum para el estado de los items de las solicitudes de prestamos de los libros
+enum RequestItemStatus {
+  Pendiente
+  Aprobado
+  Rechazado
+}
+
 // Enum para los tipos de notificaciones para los usuarios
 enum NotificationType {
   // --- Autenticación y Cuentas ---
@@ -254,7 +261,6 @@ model Book {
 
   authors BookAuthor[]
   physicalCopies PhysicalCopy[]
-  requests Request[]
   favorites Favorite[]
   reviews Review[]
 
@@ -320,6 +326,7 @@ model PhysicalCopy {
   book Book @relation(fields: [bookId], references: [id])
 
   loans Loan[]
+  requestItems RequestItem[]
 
   @@index([bookId])
   @@map("physical_copies") // Mapea el modelo a la tabla "physical_copies" en la base de datos
@@ -329,7 +336,8 @@ model PhysicalCopy {
 model Request {
   id Int @id @default(autoincrement())
   userId Int
-  bookId Int
+  titleRequest String
+  descriptionRequest String?
   requestDate DateTime @default(now())
   reasonCancellation String?
   status RequestStatus @default(Pendiente)
@@ -337,13 +345,27 @@ model Request {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
-  book Book @relation(fields: [bookId], references: [id])
 
   loans Loan[]
+  items RequestItem[]
 
   @@index([userId])
-  @@index([bookId])
   @@map("requests") // Mapea el modelo a la tabla "requests" en la base de datos
+}
+
+// Modelo tabla intermedia para la relación muchos a muchos entre solicitudes y ejemplares fisicos de los libros
+model RequestItem {
+  id Int @id @default(autoincrement())
+  requestId Int
+  physicalCopyId Int
+  status RequestItemStatus @default(Pendiente)
+
+  request Request @relation(fields: [requestId], references: [id])
+  physicalCopy PhysicalCopy @relation(fields: [physicalCopyId], references: [id])
+
+  @@index([requestId])
+  @@index([physicalCopyId])
+  @@map("request_items") // Mapea el modelo a la tabla "request_items" en la base de datos
 }
 
 // Modelo de los prestamos de los libros
