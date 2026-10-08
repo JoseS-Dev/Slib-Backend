@@ -12,6 +12,9 @@ export interface SeederCounts {
   books: number;
   bookAuthors: number;
   physicalCopies: number;
+  requests: number;
+  requestItems: number;
+  loans: number;
 }
 
 export interface SeedResult {
@@ -37,4 +40,7 @@ export const emptySeederCounts = (): SeederCounts => ({
   books: 0,
   bookAuthors: 0,
   physicalCopies: 0,
+  requests: 0,
+  requestItems: 0,
+  loans: 0,
 });

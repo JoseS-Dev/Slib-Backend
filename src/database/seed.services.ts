@@ -13,6 +13,8 @@ import { AuthorsSeeder } from './seeders/authors.seeder.js';
 import { BooksSeeder } from './seeders/books.seeder.js';
 import { BookAuthorSeeder } from './seeders/book-author.seeder.js';
 import { PhysicalCopiesSeeder } from './seeders/physical-copies.seeder.js';
+import { RequestsSeeder } from './seeders/requests.seeder.js';
+import { LoansSeeder } from './seeders/loans.seeder.js';
 
 @Injectable()
 export class SeedServices {
@@ -31,6 +33,8 @@ export class SeedServices {
     private readonly booksSeeder: BooksSeeder,
     private readonly bookAuthorSeeder: BookAuthorSeeder,
     private readonly physicalCopiesSeeder: PhysicalCopiesSeeder,
+    private readonly requestsSeeder: RequestsSeeder,
+    private readonly loansSeeder: LoansSeeder,
   ) {}
 
   /**
@@ -102,7 +106,18 @@ export class SeedServices {
       counts.physicalCopies = physicalCopies.length;
       this.logger.log(`Copias físicas: ${counts.physicalCopies}`);
 
-      // 12. Sesiones y refresh tokens
+      // 12. Solicitudes (Request + RequestItem) — dependen de usuarios y copias físicas
+      const { requests, items } = await this.requestsSeeder.run(users, physicalCopies);
+      counts.requests = requests.length;
+      counts.requestItems = items.length;
+      this.logger.log(`Solicitudes: ${counts.requests} (items: ${counts.requestItems})`);
+
+      // 13. Préstamos — dependen de los items aprobados y de un recepcionista
+      const loans = await this.loansSeeder.run(items, users);
+      counts.loans = loans.length;
+      this.logger.log(`Préstamos: ${counts.loans}`);
+
+      // 14. Sesiones y refresh tokens
       const sessions = await this.sessionsSeeder.run(users, {
         sessionProbability: 0.6,
         maxSessionsPerUser: 2,
@@ -152,6 +167,11 @@ export class SeedServices {
       counts.sessions = sessionResult.sessions;
       counts.refreshTokens = sessionResult.refreshTokens;
 
+      counts.loans = await this.loansSeeder.clear();
+      const requestCleanup = await this.requestsSeeder.clear();
+      counts.requests = requestCleanup.requests;
+      counts.requestItems = requestCleanup.items;
+
       counts.physicalCopies = await this.physicalCopiesSeeder.clear();
       counts.bookAuthors = await this.bookAuthorSeeder.clear();
       counts.books = await this.booksSeeder.clear();
@@ -171,6 +191,8 @@ export class SeedServices {
         `Subcategorías: ${counts.subcategories}, Editoriales: ${counts.publishers}, ` +
         `Autores: ${counts.authors}, Libros: ${counts.books}, ` +
         `LibroAutor: ${counts.bookAuthors}, Copias: ${counts.physicalCopies}, ` +
+        `Solicitudes: ${counts.requests}, Items: ${counts.requestItems}, ` +
+        `Préstamos: ${counts.loans}, ` +
         `Sesiones: ${counts.sessions}, RefreshTokens: ${counts.refreshTokens}`,
       );
     } catch (error) {

@@ -35,6 +35,9 @@ export async function runSeed(argv: string[] = process.argv.slice(2)): Promise<S
         books: 0,
         bookAuthors: 0,
         physicalCopies: 0,
+        requests: 0,
+        requestItems: 0,
+        loans: 0,
       },
       errors: [],
     };

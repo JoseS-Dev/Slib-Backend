@@ -14,6 +14,8 @@ import { AuthorsSeeder } from './seeders/authors.seeder.js';
 import { BooksSeeder } from './seeders/books.seeder.js';
 import { BookAuthorSeeder } from './seeders/book-author.seeder.js';
 import { PhysicalCopiesSeeder } from './seeders/physical-copies.seeder.js';
+import { RequestsSeeder } from './seeders/requests.seeder.js';
+import { LoansSeeder } from './seeders/loans.seeder.js';
 import { SeedServices } from './seed.services.js';
 
 
@@ -87,6 +89,16 @@ import { SeedServices } from './seed.services.js';
       inject: [PrismaService],
     },
     {
+      provide: RequestsSeeder,
+      useFactory: (prisma: PrismaService) => new RequestsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: LoansSeeder,
+      useFactory: (prisma: PrismaService) => new LoansSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
       provide: SeedServices,
       useFactory: (
         permissionsSeeder: PermissionsSeeder,
@@ -101,6 +113,8 @@ import { SeedServices } from './seed.services.js';
         booksSeeder: BooksSeeder,
         bookAuthorSeeder: BookAuthorSeeder,
         physicalCopiesSeeder: PhysicalCopiesSeeder,
+        requestsSeeder: RequestsSeeder,
+        loansSeeder: LoansSeeder,
       ) =>
         new SeedServices(
           permissionsSeeder,
@@ -115,6 +129,8 @@ import { SeedServices } from './seed.services.js';
           booksSeeder,
           bookAuthorSeeder,
           physicalCopiesSeeder,
+          requestsSeeder,
+          loansSeeder,
         ),
       inject: [
         PermissionsSeeder,
@@ -129,6 +145,8 @@ import { SeedServices } from './seed.services.js';
         BooksSeeder,
         BookAuthorSeeder,
         PhysicalCopiesSeeder,
+        RequestsSeeder,
+        LoansSeeder,
       ],
     },
   ],
