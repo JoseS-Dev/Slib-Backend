@@ -1,6 +1,6 @@
 import z from 'zod';
 
-const authorSchema = z.object({
+export const authorSchema = z.object({
     id: z.number().int().positive(),
     firstName: z.string().min(1).max(50),
     lastName: z.string().min(1).max(50),
