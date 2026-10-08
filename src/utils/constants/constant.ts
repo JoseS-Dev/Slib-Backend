@@ -14,3 +14,10 @@ export const RecordRequestStatus: Record<string, string[]> = {
     Rechazada: [],
     Cancelada: [],
 }
+
+// Record para los estados de los préstamos de libros
+export const RecordLoanStatus: Record<string, string[]> = {
+    Activo: ['Finalizado', 'Vencido'],
+    Finalizado: [],
+    Vencido: ['Finalizado'],
+}
