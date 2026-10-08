@@ -8,6 +8,11 @@ import { UsersSeeder } from './seeders/users.seeder.js';
 import { SessionsSeeder } from './seeders/sessions.seeder.js';
 import { CategoriesSeeder } from './seeders/categories.seeder.js';
 import { SubcategoriesSeeder } from './seeders/subcategories.seeder.js';
+import { PublishersSeeder } from './seeders/publishers.seeder.js';
+import { AuthorsSeeder } from './seeders/authors.seeder.js';
+import { BooksSeeder } from './seeders/books.seeder.js';
+import { BookAuthorSeeder } from './seeders/book-author.seeder.js';
+import { PhysicalCopiesSeeder } from './seeders/physical-copies.seeder.js';
 
 @Injectable()
 export class SeedServices {
@@ -21,12 +26,16 @@ export class SeedServices {
     private readonly sessionsSeeder: SessionsSeeder,
     private readonly categoriesSeeder: CategoriesSeeder,
     private readonly subcategoriesSeeder: SubcategoriesSeeder,
+    private readonly publishersSeeder: PublishersSeeder,
+    private readonly authorsSeeder: AuthorsSeeder,
+    private readonly booksSeeder: BooksSeeder,
+    private readonly bookAuthorSeeder: BookAuthorSeeder,
+    private readonly physicalCopiesSeeder: PhysicalCopiesSeeder,
   ) {}
 
   /**
-   * Ejecuta la semilla completa de los módulos auth, security y categories.
-   * El orden respeta las claves foráneas: permisos → roles → role-permission
-   * → usuarios → categorías → subcategorías → sesiones → refresh tokens.
+   * Ejecuta la semilla completa de los módulos auth, security, categories
+   * y books. El orden respeta las claves foráneas.
    */
   async run(): Promise<SeedResult> {
     const startedAt = new Date();
@@ -65,7 +74,35 @@ export class SeedServices {
       counts.subcategories = subcategories.length;
       this.logger.log(`Subcategorías: ${counts.subcategories}`);
 
-      // 7. Sesiones y refresh tokens
+      // 7. Editoriales
+      const publishers = await this.publishersSeeder.run();
+      counts.publishers = publishers.length;
+      this.logger.log(`Editoriales: ${counts.publishers}`);
+
+      // 8. Autores
+      const authors = await this.authorsSeeder.run();
+      counts.authors = authors.length;
+      this.logger.log(`Autores: ${counts.authors}`);
+
+      // 9. Libros (dependen de categorías, subcategorías y editoriales)
+      const { books, authorIndexesByIsbn } = await this.booksSeeder.run(
+        categories,
+        publishers,
+        subcategories,
+      );
+      counts.books = books.length;
+      this.logger.log(`Libros: ${counts.books}`);
+
+      // 10. Asociación libro-autor
+      counts.bookAuthors = await this.bookAuthorSeeder.run(books, authors, authorIndexesByIsbn);
+      this.logger.log(`Asociación libro-autor: ${counts.bookAuthors}`);
+
+      // 11. Copias físicas (dependen de libros)
+      const physicalCopies = await this.physicalCopiesSeeder.run(books);
+      counts.physicalCopies = physicalCopies.length;
+      this.logger.log(`Copias físicas: ${counts.physicalCopies}`);
+
+      // 12. Sesiones y refresh tokens
       const sessions = await this.sessionsSeeder.run(users, {
         sessionProbability: 0.6,
         maxSessionsPerUser: 2,
@@ -115,6 +152,11 @@ export class SeedServices {
       counts.sessions = sessionResult.sessions;
       counts.refreshTokens = sessionResult.refreshTokens;
 
+      counts.physicalCopies = await this.physicalCopiesSeeder.clear();
+      counts.bookAuthors = await this.bookAuthorSeeder.clear();
+      counts.books = await this.booksSeeder.clear();
+      counts.authors = await this.authorsSeeder.clear();
+      counts.publishers = await this.publishersSeeder.clear();
       counts.subcategories = await this.subcategoriesSeeder.clear();
       counts.categories = await this.categoriesSeeder.clear();
       counts.users = await this.usersSeeder.clear();
@@ -126,8 +168,10 @@ export class SeedServices {
         `Limpieza completada. Permisos: ${counts.permissions}, ` +
         `Roles: ${counts.roles}, RolePermission: ${counts.rolePermissions}, ` +
         `Usuarios: ${counts.users}, Categorías: ${counts.categories}, ` +
-        `Subcategorías: ${counts.subcategories}, Sesiones: ${counts.sessions}, ` +
-        `RefreshTokens: ${counts.refreshTokens}`,
+        `Subcategorías: ${counts.subcategories}, Editoriales: ${counts.publishers}, ` +
+        `Autores: ${counts.authors}, Libros: ${counts.books}, ` +
+        `LibroAutor: ${counts.bookAuthors}, Copias: ${counts.physicalCopies}, ` +
+        `Sesiones: ${counts.sessions}, RefreshTokens: ${counts.refreshTokens}`,
       );
     } catch (error) {
       const message =

@@ -9,6 +9,11 @@ import { UsersSeeder } from './seeders/users.seeder.js';
 import { SessionsSeeder } from './seeders/sessions.seeder.js';
 import { CategoriesSeeder } from './seeders/categories.seeder.js';
 import { SubcategoriesSeeder } from './seeders/subcategories.seeder.js';
+import { PublishersSeeder } from './seeders/publishers.seeder.js';
+import { AuthorsSeeder } from './seeders/authors.seeder.js';
+import { BooksSeeder } from './seeders/books.seeder.js';
+import { BookAuthorSeeder } from './seeders/book-author.seeder.js';
+import { PhysicalCopiesSeeder } from './seeders/physical-copies.seeder.js';
 import { SeedServices } from './seed.services.js';
 
 
@@ -57,6 +62,31 @@ import { SeedServices } from './seed.services.js';
       inject: [PrismaService],
     },
     {
+      provide: PublishersSeeder,
+      useFactory: (prisma: PrismaService) => new PublishersSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: AuthorsSeeder,
+      useFactory: (prisma: PrismaService) => new AuthorsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: BooksSeeder,
+      useFactory: (prisma: PrismaService) => new BooksSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: BookAuthorSeeder,
+      useFactory: (prisma: PrismaService) => new BookAuthorSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: PhysicalCopiesSeeder,
+      useFactory: (prisma: PrismaService) => new PhysicalCopiesSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
       provide: SeedServices,
       useFactory: (
         permissionsSeeder: PermissionsSeeder,
@@ -66,6 +96,11 @@ import { SeedServices } from './seed.services.js';
         sessionsSeeder: SessionsSeeder,
         categoriesSeeder: CategoriesSeeder,
         subcategoriesSeeder: SubcategoriesSeeder,
+        publishersSeeder: PublishersSeeder,
+        authorsSeeder: AuthorsSeeder,
+        booksSeeder: BooksSeeder,
+        bookAuthorSeeder: BookAuthorSeeder,
+        physicalCopiesSeeder: PhysicalCopiesSeeder,
       ) =>
         new SeedServices(
           permissionsSeeder,
@@ -75,6 +110,11 @@ import { SeedServices } from './seed.services.js';
           sessionsSeeder,
           categoriesSeeder,
           subcategoriesSeeder,
+          publishersSeeder,
+          authorsSeeder,
+          booksSeeder,
+          bookAuthorSeeder,
+          physicalCopiesSeeder,
         ),
       inject: [
         PermissionsSeeder,
@@ -84,6 +124,11 @@ import { SeedServices } from './seed.services.js';
         SessionsSeeder,
         CategoriesSeeder,
         SubcategoriesSeeder,
+        PublishersSeeder,
+        AuthorsSeeder,
+        BooksSeeder,
+        BookAuthorSeeder,
+        PhysicalCopiesSeeder,
       ],
     },
   ],
