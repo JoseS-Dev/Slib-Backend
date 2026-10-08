@@ -6,3 +6,11 @@ export const RecordPhysicalCopyStatus: Record<string, string[]> = {
     Dañado: ['Mantenimiento', 'Disponible'],
     Mantenimiento: ['Disponible', 'Dañado'],
 }
+
+// Record para los estados de las solicitudes de libros
+export const RecordRequestStatus: Record<string, string[]> = {
+    Pendiente: ['Aprobada', 'Rechazada'],
+    Aprobada: ['Cancelada'],
+    Rechazada: [],
+    Cancelada: [],
+}

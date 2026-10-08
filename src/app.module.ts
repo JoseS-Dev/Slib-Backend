@@ -8,6 +8,7 @@ import uploadsConfig from './config/storages/uploads.config.js';
 import { MailerModule } from './modules/mailer/mailer.module.js';
 import { JwtModuleGlobal } from './modules/jwt/jwt.module.js';
 import { BooksModule } from './modules/books/root.module.js';
+import { RequestsModule } from './modules/requests/root.module.js';
 import { SecurityModule } from './modules/security/root.module.js';
 import { CategoriesModule } from './modules/categories/root.module.js';
 import type { NestModule, MiddlewareConsumer } from '@nestjs/common';
@@ -27,7 +28,8 @@ import { CorrelationMiddleware } from './common/middlewares/correlation.middlewa
     AuthModule,
     SecurityModule,
     CategoriesModule,
-    BooksModule
+    BooksModule,
+    RequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
