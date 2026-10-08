@@ -32,7 +32,8 @@ El dominio del proyecto (vocabulario, comentarios, valores de los `enum` de Pris
 - **Mailer (`/api/mailer`)** — endpoints públicos para verificación de cuenta, definición inicial de contraseña, recuperación de contraseña y reseteo con token; envío vía Resend; plantillas Handlebars compiladas dinámicamente.
 - **Categorías y subcategorías (`/api/category`, `/api/subcategory`)** — CRUD con paginación, activación/desactivación (`isActive`), listado por categoría padre, soporte para crear subcategorías en línea al crear/actualizar una categoría.
 - **Libros (`/api/book`)** — CRUD con paginación, asociación a categoría, subcategoría y editorial, soporte para subir portada vía multipart (`Multer`), borrado físico del archivo al actualizar o eliminar el libro, listado por categoría / subcategoría / editorial, soft delete, campos opcionales para el tipo MIME y tamaño del archivo.
-- **Catálogo base (seed)** — poblado inicial idempotente bajo `src/database/`: permisos, roles, asociación rol-permiso, usuarios con contraseñas hasheadas, sesiones y refresh tokens, categorías, subcategorías.
+- **Solicitudes y préstamos (`/api/request`, `/api/loan`)** — ciclo completo: un usuario crea una solicitud (`Request` + `RequestItem[]`) referenciando copias físicas reales; el recepcionista cambia su estado siguiendo `RecordRequestStatus`; cuando se aprueba, el recepcionista crea el préstamo (`Loan`) con fecha tentativa de devolución y un estado inicial `Activo`; las transiciones de estado del préstamo respetan `RecordLoanStatus` (`Activo → Finalizado | Vencido`, `Vencido → Finalizado`).
+- **Catálogo base (seed)** — poblado inicial idempotente bajo `src/database/`: permisos, roles, asociación rol-permiso, usuarios con contraseñas hasheadas, sesiones y refresh tokens, categorías, subcategorías, editoriales, autores, libros, asociación libro-autor, copias físicas, solicitudes (con sus items) y préstamos.
 - **Seguridad y hardening** — `helmet` para cabeceras HTTP, CORS con whitelist configurable, `cookie-parser`, validación global con `ZodValidationPipe` (Zod 4), filtros para errores de Zod, Prisma, `NotFound` y excepción genérica, middleware de correlación (`CorrelationMiddleware`) aplicado a todas las rutas, interceptores para logging y formato uniforme de respuesta.
 - **Almacenamiento local** — servicio de archivos para portadas (`StorageService` + `MulterInterceptor`), ruta configurable vía `UPLOADS_DIR`, tamaño máximo y tipos MIME/extension permitidos validados en `src/config/storages/`.
 
@@ -219,7 +220,7 @@ src/
 │   └── middlewares/                — Correlation
 ├── database/
 │   ├── interfaces/
-│   ├── seeders/                    — 7 seeders idempotentes
+│   ├── seeders/                    — 14 seeders idempotentes (auth + libros + solicitudes)
 │   ├── seed.module.ts
 │   ├── seed.services.ts            — orquesta el seed y el clear
 │   └── seed.runner.ts              — CLI (--clear / --help)
@@ -237,7 +238,15 @@ src/
 │   │   └── subcategory/
 │   ├── books/
 │   │   ├── root.module.ts
-│   │   └── book/                   — multipart, file cleanup
+│   │   ├── book/                   — multipart, file cleanup
+│   │   ├── authors/
+│   │   ├── publisher/
+│   │   ├── book-author/
+│   │   └── physical/
+│   ├── requests/
+│   │   ├── root.module.ts
+│   │   ├── request/                — Request + RequestItem
+│   │   └── loan/                   — Loan
 │   └── security/
 │       ├── root.module.ts
 │       ├── permissions/
@@ -260,7 +269,8 @@ rest/                               — archivos .http para REST Client
 ├── auth/{users,sessions,roles}/
 ├── mailer/mailer.http
 ├── categories/{category,subcategory}/
-├── books/book/
+├── books/{book,authors,publisher,book-author,physical}/
+├── requests/{request,loan}/
 └── security/{permissions,role-permission}/
 
 generated/                          — gitignored; cliente Prisma (output del generator)
@@ -340,6 +350,25 @@ Todos los endpoints se sirven bajo el prefijo global `/api` (configurable vía `
 - `PATCH /api/book/:id` — **Administrador, Recepcionista** — multipart; reemplaza la portada anterior en disco si la hay.
 - `DELETE /api/book/:id` — **Administrador** — soft delete + borrado físico de la portada.
 
+### Solicitudes — `/api/request`
+
+- `POST /api/request` — **Usuario, Administrador, Recepcionista** — crea una solicitud con sus `RequestItem` (uno o varios `physicalCopyId`); estado inicial `Pendiente`.
+- `GET /api/request?page=&limit=&status=` — **Administrador, Recepcionista** — paginado, filtrable por `status` (`Pendiente` | `Aprobada` | `Rechazada` | `Cancelada`).
+- `GET /api/request/user/:userId?page=&limit=&status=` — **Usuario** — solicitudes del usuario autenticado.
+- `GET /api/request/:id` — **Administrador, Recepcionista, Usuario** — incluye `user` e `items` con la copia física relacionada.
+- `PATCH /api/request/:id` — **Administrador, Recepcionista, Usuario** — actualiza título, descripción, fecha y reemplaza la lista de items si se envía.
+- `PATCH /api/request/status/:id` — **Administrador, Recepcionista** — transición de estado respetando `RecordRequestStatus` (`Pendiente → Aprobada | Rechazada`, `Aprobada → Cancelada`). Para `Cancelada` se exige `reasonCancellation` no vacía.
+- `DELETE /api/request/:id` — **Administrador, Recepcionista** — elimina la solicitud y sus `RequestItem` en una transacción.
+
+### Préstamos — `/api/loan`
+
+- `POST /api/loan` — **Recepcionista, Administrador** — crea un préstamo referenciando un `requestItemId` aprobado, una `physicalCopyId` y un `recepcionistId` (rol `Recepcionista`); estado inicial `Activo`.
+- `GET /api/loan?page=&limit=&status=` — **Recepcionista, Administrador** — paginado, filtrable por `status` (`Activo` | `Finalizado` | `Vencido`).
+- `GET /api/loan/:id` — **Recepcionista, Administrador** — incluye `item` y `physicalCopy`.
+- `PATCH /api/loan/:id` — **Recepcionista, Administrador** — útil para registrar `returnDateReal` al devolver.
+- `PATCH /api/loan/status/:id` — **Recepcionista, Administrador** — body `{ "newStatus": "Finalizado" | "Vencido" }` respetando `RecordLoanStatus` (`Activo → Finalizado | Vencido`, `Vencido → Finalizado`).
+- `DELETE /api/loan/:id` — **Administrador** — solo si el préstamo no está `Activo`.
+
 ---
 
 ## Base de datos
@@ -372,7 +401,7 @@ pnpm prisma:seed:clear    # borra los datos sembrados en orden inverso
 pnpm prisma:seed --help   # imprime ayuda
 ```
 
-La ejecución imprime al final un resumen con los conteos por entidad (`permissions`, `roles`, `rolePermissions`, `users`, `sessions`, `refreshTokens`, `categories`, `subcategories`) y la lista de errores si alguno falló.
+La ejecución imprime al final un resumen con los conteos por entidad (`permissions`, `roles`, `rolePermissions`, `users`, `sessions`, `refreshTokens`, `categories`, `subcategories`, `publishers`, `authors`, `books`, `bookAuthors`, `physicalCopies`, `requests`, `requestItems`, `loans`) y la lista de errores si alguno falló.
 
 Orden de ejecución (respeta las claves foráneas):
 
@@ -390,7 +419,14 @@ Orden de ejecución (respeta las claves foráneas):
    - Los faker usan una contraseña aleatoria de 6 caracteres generada y hasheada con `argon2`.
 5. **Categorías** — 8 categorías base (`CATEGORY_CATALOG`): Ficción, Ciencia, Historia, Literatura, Infantil, Académico, Arte, Tecnología.
 6. **Subcategorías** — 28 subcategorías asociadas a las categorías anteriores (`SUBCATEGORY_CATALOG`).
-7. **Sesiones y refresh tokens** — 60% de probabilidad por usuario, máximo 2 sesiones por usuario; cada sesión recibe refresh tokens con hash sha256.
+7. **Editoriales** — 8 publishers (Planeta, Penguin Random House, Anagrama, Alfaguara, Sudamericana, FCE, Océano, Akal).
+8. **Autores** — 15 autores (García Márquez, Allende, Borges, Vargas Llosa, Cortázar, Fuentes, Neruda, Paz, Cervantes, Lorca, King, Harari, Sagan, Peres, Sanderson).
+9. **Libros** — 22 libros (`BOOK_CATALOG`) con ISBN-13 único, cada uno enlazado a su categoría, subcategoría (opcional) y editorial.
+10. **Asociación libro-autor** — `BookAuthorSeeder` enlaza cada libro con los autores referenciados por índice en el catálogo de libros.
+11. **Copias físicas** — 2 copias por libro (44 totales), con número de copia y ubicación derivados del ISBN.
+12. **Solicitudes** — `RequestsSeeder` crea solicitudes (3 hardcoded para los usuarios conocidos + aleatorias para los faker) con sus `RequestItem` referenciando copias físicas reales; los estados siguen la distribución `55% Aprobada / 23% Pendiente / 12% Rechazada / 10% Cancelada`.
+13. **Préstamos** — `LoansSeeder` crea un préstamo por cada `RequestItem` aprobado; estados distribuidos en `60% Activo / 25% Finalizado / 15% Vencido` con fechas coherentes (`returnDateReal` solo en los finalizados).
+14. **Sesiones y refresh tokens** — 60% de probabilidad por usuario, máximo 2 sesiones por usuario; cada sesión recibe refresh tokens con hash sha256.
 
 Las contraseñas de los 3 usuarios conocidos están hasheadas con `argon2` y son **`secreto1`**. Son las credenciales que imprime `printHelp()` y las que se usan en los archivos `rest/`.
 
