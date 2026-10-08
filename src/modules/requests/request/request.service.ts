@@ -12,20 +12,32 @@ export class RequestService {
 
   async create(createRequestDto: CreateRequestDto) : Promise<Request> {
     // Se verifica que exista el usuario y el libro que esta solicitado
-    const [existingUser, existingBook] = await Promise.all([
-      this.prisma.extended.user.findUnique({
+    const existingUser = await this.prisma.extended.user.findUnique({
         where: { id: createRequestDto.userId },
-      }),
-      this.prisma.extended.book.findUnique({
-        where: { id: createRequestDto.bookId },
-      }),
-    ]);
+    })
     if(!existingUser) throw new NotFoundException('No se encontró el usuario con el ID proporcionado');
-    if(!existingBook) throw new NotFoundException('No se encontró el libro con el ID proporcionado');
     // Si existe, se crea la solicitud
-    return this.prisma.request.create({
-      data: createRequestDto
+    const newRequest = await this.prisma.$transaction(async (tx) => {
+      const request = await tx.request.create({
+        data: {
+          userId: createRequestDto.userId,
+          titleRequest: createRequestDto.titleRequest,
+          descriptionRequest: createRequestDto.descriptionRequest,
+          items: {
+            create: createRequestDto.items!.map(item => ({
+              physicalCopyId: item.physicalCopyId,
+            }))
+          }
+        },
+        include: {
+          user: true,
+          items: true,
+        }
+      });
+      return request;
     });
+    if(!newRequest) throw new BadRequestException('No se pudo crear la solicitud');
+    return newRequest;
   }
 
   async findAll(page: number = 1, limit: number = 10, status?: RequestStatus) : Promise<{data: Request[], total: number, totalPages: number}> {
@@ -37,7 +49,7 @@ export class RequestService {
         orderBy: { requestDate: 'desc' },
         include: {
           user: true,
-          book: true,
+          items: true,
         }
       }),
       this.prisma.extended.request.count(),
@@ -60,36 +72,11 @@ export class RequestService {
         orderBy: { requestDate: 'desc' },
         include: {
           user: true,
-          book: true,
+          items: true,
         }
       }),
       this.prisma.extended.request.count({
         where: { userId },
-      }),
-    ]);
-    const totalPages = Math.ceil(total / limit);
-    return { data: requests, total, totalPages };
-  }
-
-  async findAllByBook(bookId: number, page: number = 1, limit: number = 10, status?: RequestStatus) : Promise<{data: Request[], total: number, totalPages: number}> {
-    // Se verifica que exista el libro
-    const existingBook = await this.prisma.extended.book.findUnique({
-      where: { id: bookId },
-    });
-    if(!existingBook) throw new NotFoundException('No se encontró el libro con el ID proporcionado');
-    const [requests, total] = await Promise.all([
-      this.prisma.extended.request.findMany({
-        where: { bookId, ... (status ? { status } : {}) },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { requestDate: 'desc' },
-        include: {
-          user: true,
-          book: true,
-        }
-      }),
-      this.prisma.extended.request.count({
-        where: { bookId },
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
@@ -101,7 +88,7 @@ export class RequestService {
       where: { id },
       include: {
         user: true,
-        book: true,
+        items: true,
       }
     });
     if(!request) throw new NotFoundException('No se encontró la solicitud con el ID proporcionado');
@@ -112,17 +99,28 @@ export class RequestService {
     // Se verifica que exista la solicitud
     const existingRequest = await this.findOne(id);
     if(!existingRequest) throw new NotFoundException('No se encontró la solicitud con el ID proporcionado');
-    // Si se va a cambiar el libro, se verifica que exista el libro
-    if(updateRequestDto.bookId && updateRequestDto.bookId !== existingRequest.bookId) {
-      const existingBook = await this.prisma.extended.book.findUnique({
-        where: { id: updateRequestDto.bookId },
+    const updatedRequest = await this.prisma.$transaction(async (tx) => {
+      const request = await tx.request.update({
+        where: { id },
+        data: {
+          titleRequest: updateRequestDto.titleRequest ?? existingRequest.titleRequest,
+          descriptionRequest: updateRequestDto.descriptionRequest ?? existingRequest.descriptionRequest,
+          requestDate: updateRequestDto.requestDate ?? existingRequest.requestDate,
+          items: updateRequestDto.items ? {
+            create: updateRequestDto.items.map(item => ({
+              physicalCopyId: item.physicalCopyId,
+            }))
+          } : undefined
+        },
+        include: {
+          user: true,
+          items: true,
+        }
       });
-      if(!existingBook) throw new NotFoundException('No se encontró el libro con el ID proporcionado');
-    }
-    return this.prisma.request.update({
-      where: { id },
-      data: updateRequestDto
+      return request;
     });
+    if(!updatedRequest) throw new BadRequestException('No se pudo actualizar la solicitud');
+    return updatedRequest;
   }
 
   async changeStatus(id: number, data: UpdateRequestDto) : Promise<Request> {
@@ -162,9 +160,17 @@ export class RequestService {
     const existingRequest = await this.findOne(id);
     if(!existingRequest) throw new NotFoundException('No se encontró la solicitud con el ID proporcionado');
     // Si existe, se elimina la solicitud
-    const deletedRequest = await this.prisma.request.delete({
-      where: { id }
-    });
+    const deletedRequest = await this.prisma.$transaction(async (tx) => {
+      // Se elimina los items asociados a la solicitud
+      await tx.requestItem.deleteMany({
+        where: { requestId: id },
+      });
+      // Se elimina la solicitud
+      const request = await tx.request.delete({
+        where: { id },
+      });
+      return request;
+    })
     if(!deletedRequest) throw new BadRequestException('No se pudo eliminar la solicitud');
     return { message: 'Solicitud eliminada correctamente' };
   }

@@ -59,20 +59,6 @@ export class RequestController {
     return this.requestService.findAllByUser(userId, page, limit, status);
   }
 
-  @Get('book/:bookId')
-  @HttpCode(HttpStatus.OK)
-  @Roles('Administrador', 'Recepcionista')
-  async findAllByBook(
-    @Param('bookId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) bookId: number,
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10,
-    @Query('status') status?: RequestStatus
-  ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination) {
-      throw new HttpException('Parámetros de paginación invalidos', HttpStatus.BAD_REQUEST);
-    }
-    return this.requestService.findAllByBook(bookId, page, limit, status);
-  }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
