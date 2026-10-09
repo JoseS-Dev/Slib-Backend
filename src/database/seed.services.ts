@@ -15,6 +15,13 @@ import { BookAuthorSeeder } from './seeders/book-author.seeder.js';
 import { PhysicalCopiesSeeder } from './seeders/physical-copies.seeder.js';
 import { RequestsSeeder } from './seeders/requests.seeder.js';
 import { LoansSeeder } from './seeders/loans.seeder.js';
+import { FinesSeeder } from './seeders/fines.seeder.js';
+import { SuspensionsSeeder } from './seeders/suspensions.seeder.js';
+import { FavoritesSeeder } from './seeders/favorites.seeder.js';
+import { ReviewsSeeder } from './seeders/reviews.seeder.js';
+import { NotificationsSeeder } from './seeders/notifications.seeder.js';
+import { ReportsSeeder } from './seeders/reports.seeder.js';
+import { IncidentsSeeder } from './seeders/incidents.seeder.js';
 
 @Injectable()
 export class SeedServices {
@@ -35,6 +42,13 @@ export class SeedServices {
     private readonly physicalCopiesSeeder: PhysicalCopiesSeeder,
     private readonly requestsSeeder: RequestsSeeder,
     private readonly loansSeeder: LoansSeeder,
+    private readonly finesSeeder: FinesSeeder,
+    private readonly suspensionsSeeder: SuspensionsSeeder,
+    private readonly favoritesSeeder: FavoritesSeeder,
+    private readonly reviewsSeeder: ReviewsSeeder,
+    private readonly notificationsSeeder: NotificationsSeeder,
+    private readonly reportsSeeder: ReportsSeeder,
+    private readonly incidentsSeeder: IncidentsSeeder,
   ) {}
 
   /**
@@ -129,7 +143,46 @@ export class SeedServices {
       counts.loans = loans.length;
       this.logger.log(`Préstamos: ${counts.loans}`);
 
-      // 14. Sesiones y refresh tokens
+      // 14. Multas — dependen de los préstamos vencidos
+      const fines = await this.finesSeeder.run(loans);
+      counts.fines = fines.length;
+      this.logger.log(`Multas: ${counts.fines}`);
+
+      // 15. Suspensiones — dependen de las multas pendientes
+      const suspensions = await this.suspensionsSeeder.run(fines);
+      counts.suspensions = suspensions.length;
+      this.logger.log(`Suspensiones: ${counts.suspensions}`);
+
+      // 16. Favoritos — dependen de usuarios y libros
+      const favorites = await this.favoritesSeeder.run(users, books);
+      counts.favorites = favorites.length;
+      this.logger.log(`Favoritos: ${counts.favorites}`);
+
+      // 17. Reseñas — dependen de usuarios y libros
+      const reviews = await this.reviewsSeeder.run(users, books);
+      counts.reviews = reviews.length;
+      this.logger.log(`Reseñas: ${counts.reviews}`);
+
+      // 18. Notificaciones — dependen de usuarios
+      const notifications = await this.notificationsSeeder.run(users);
+      counts.notifications = notifications.length;
+      this.logger.log(`Notificaciones: ${counts.notifications}`);
+
+      // 19. Reportes — dependen de usuarios con rol Administrador/Recepcionista
+      const reports = await this.reportsSeeder.run();
+      counts.reports = reports.length;
+      this.logger.log(`Reportes: ${counts.reports}`);
+
+      // 20. Incidencias — dependen de usuarios, copias físicas y préstamos
+      const incidents = await this.incidentsSeeder.run(
+        users,
+        physicalCopies,
+        loans,
+      );
+      counts.incidents = incidents.length;
+      this.logger.log(`Incidencias: ${counts.incidents}`);
+
+      // 21. Sesiones y refresh tokens
       const sessions = await this.sessionsSeeder.run(users, {
         sessionProbability: 0.6,
         maxSessionsPerUser: 2,
@@ -184,6 +237,14 @@ export class SeedServices {
       counts.sessions = sessionResult.sessions;
       counts.refreshTokens = sessionResult.refreshTokens;
 
+      counts.incidents = await this.incidentsSeeder.clear();
+      counts.reports = await this.reportsSeeder.clear();
+      counts.notifications = await this.notificationsSeeder.clear();
+      counts.reviews = await this.reviewsSeeder.clear();
+      counts.favorites = await this.favoritesSeeder.clear();
+      counts.suspensions = await this.suspensionsSeeder.clear();
+      counts.fines = await this.finesSeeder.clear();
+
       counts.loans = await this.loansSeeder.clear();
       const requestCleanup = await this.requestsSeeder.clear();
       counts.requests = requestCleanup.requests;
@@ -209,7 +270,10 @@ export class SeedServices {
           `Autores: ${counts.authors}, Libros: ${counts.books}, ` +
           `LibroAutor: ${counts.bookAuthors}, Copias: ${counts.physicalCopies}, ` +
           `Solicitudes: ${counts.requests}, Items: ${counts.requestItems}, ` +
-          `Préstamos: ${counts.loans}, ` +
+          `Préstamos: ${counts.loans}, Multas: ${counts.fines}, ` +
+          `Suspensiones: ${counts.suspensions}, Favoritos: ${counts.favorites}, ` +
+          `Reseñas: ${counts.reviews}, Notificaciones: ${counts.notifications}, ` +
+          `Reportes: ${counts.reports}, Incidencias: ${counts.incidents}, ` +
           `Sesiones: ${counts.sessions}, RefreshTokens: ${counts.refreshTokens}`,
       );
     } catch (error) {

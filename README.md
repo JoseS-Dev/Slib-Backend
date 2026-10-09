@@ -33,7 +33,9 @@ El dominio del proyecto (vocabulario, comentarios, valores de los `enum` de Pris
 - **Categorías y subcategorías (`/api/category`, `/api/subcategory`)** — CRUD con paginación, activación/desactivación (`isActive`), listado por categoría padre, soporte para crear subcategorías en línea al crear/actualizar una categoría.
 - **Libros (`/api/book`)** — CRUD con paginación, asociación a categoría, subcategoría y editorial, soporte para subir portada vía multipart (`Multer`), borrado físico del archivo al actualizar o eliminar el libro, listado por categoría / subcategoría / editorial, soft delete, campos opcionales para el tipo MIME y tamaño del archivo.
 - **Solicitudes y préstamos (`/api/request`, `/api/loan`)** — ciclo completo: un usuario crea una solicitud (`Request` + `RequestItem[]`) referenciando copias físicas reales; el recepcionista cambia su estado siguiendo `RecordRequestStatus`; cuando se aprueba, el recepcionista crea el préstamo (`Loan`) con fecha tentativa de devolución y un estado inicial `Activo`; las transiciones de estado del préstamo respetan `RecordLoanStatus` (`Activo → Finalizado | Vencido`, `Vencido → Finalizado`).
-- **Catálogo base (seed)** — poblado inicial idempotente bajo `src/database/`: permisos, roles, asociación rol-permiso, usuarios con contraseñas hasheadas, sesiones y refresh tokens, categorías, subcategorías, editoriales, autores, libros, asociación libro-autor, copias físicas, solicitudes (con sus items) y préstamos.
+- **Multas y suspensiones (`/api/fine`, `/api/suspension`)** — las multas se generan sobre préstamos vencidos (`amount` decimal, estados `Pendiente | Pagada | Condonada`); las suspensiones de usuario derivan de una multa (`fineId` opcional) y respetan `RecordSuspensionStatus` (`Activa → Finalizada | Revocada`), con validación de que `endDate` sea posterior a `startDate`.
+- **Módulos generales (`/api/incident`, `/api/notification`, `/api/report`, `/api/review`, `/api/favorites`)** — incidencias con estado gobernado por `RecordIncidentStatus` (`Pendiente → En_Revision → Resuelta`), notificaciones por usuario con marcado masivo como leídas y emisión por WebSocket, reportes de administración tipados por `ReportType` (sólo Administrador/Recepcionista), reseñas de libros (rating 1-5, una por usuario/libro) y favoritos (usuario → libro, sin duplicados).
+- **Catálogo base (seed)** — poblado inicial idempotente bajo `src/database/`: permisos, roles, asociación rol-permiso, usuarios con contraseñas hasheadas, sesiones y refresh tokens, categorías, subcategorías, editoriales, autores, libros, asociación libro-autor, copias físicas, solicitudes (con sus items), préstamos, multas, suspensiones, favoritos, reseñas, notificaciones, reportes e incidencias.
 - **Seguridad y hardening** — `helmet` para cabeceras HTTP, CORS con whitelist configurable, `cookie-parser`, validación global con `ZodValidationPipe` (Zod 4), filtros para errores de Zod, Prisma, `NotFound` y excepción genérica, middleware de correlación (`CorrelationMiddleware`) aplicado a todas las rutas, interceptores para logging y formato uniforme de respuesta.
 - **Almacenamiento local** — servicio de archivos para portadas (`StorageService` + `MulterInterceptor`), ruta configurable vía `UPLOADS_DIR`, tamaño máximo y tipos MIME/extension permitidos validados en `src/config/storages/`.
 
@@ -220,7 +222,7 @@ src/
 │   └── middlewares/                — Correlation
 ├── database/
 │   ├── interfaces/
-│   ├── seeders/                    — 14 seeders idempotentes (auth + libros + solicitudes)
+│   ├── seeders/                    — 21 seeders idempotentes (auth + libros + solicitudes + general)
 │   ├── seed.module.ts
 │   ├── seed.services.ts            — orquesta el seed y el clear
 │   └── seed.runner.ts              — CLI (--clear / --help)
@@ -246,7 +248,17 @@ src/
 │   ├── requests/
 │   │   ├── root.module.ts
 │   │   ├── request/                — Request + RequestItem
-│   │   └── loan/                   — Loan
+│   │   ├── loan/                   — Loan
+│   │   ├── items/                  — RequestItem
+│   │   └── fine/                   — Fine
+│   ├── general/
+│   │   ├── root.module.ts
+│   │   ├── favorites/
+│   │   ├── incident/
+│   │   ├── notification/           — REST + gateway WebSocket
+│   │   ├── report/
+│   │   ├── review/
+│   │   └── suspension/
 │   └── security/
 │       ├── root.module.ts
 │       ├── permissions/
@@ -270,7 +282,8 @@ rest/                               — archivos .http para REST Client
 ├── mailer/mailer.http
 ├── categories/{category,subcategory}/
 ├── books/{book,authors,publisher,book-author,physical}/
-├── requests/{request,loan}/
+├── requests/{request,loan,fine}/
+├── general/{favorites,incident,notification,report,review,suspension}/
 └── security/{permissions,role-permission}/
 
 generated/                          — gitignored; cliente Prisma (output del generator)
@@ -369,6 +382,72 @@ Todos los endpoints se sirven bajo el prefijo global `/api` (configurable vía `
 - `PATCH /api/loan/status/:id` — **Recepcionista, Administrador** — body `{ "newStatus": "Finalizado" | "Vencido" }` respetando `RecordLoanStatus` (`Activo → Finalizado | Vencido`, `Vencido → Finalizado`).
 - `DELETE /api/loan/:id` — **Administrador** — solo si el préstamo no está `Activo`.
 
+### Multas — `/api/fine`
+
+- `POST /api/fine` — **Recepcionista, Administrador** — crea una multa sobre un préstamo en estado `Vencido` (body: `{ loanId, userId, amount, reason? }`); estado inicial `Pendiente`.
+- `GET /api/fine?page=&limit=&status=` — **Recepcionista, Administrador** — filtrable por `status` (`Pendiente` | `Pagada` | `Condonada`).
+- `GET /api/fine/user/:userId?page=&limit=&status=` — **Usuario, Recepcionista**.
+- `GET /api/fine/:id` — **Usuario, Recepcionista, Administrador**.
+- `PATCH /api/fine/:id` — **Recepcionista, Administrador** — edita `amount`, `reason` y `status`.
+- `DELETE /api/fine/:id` — **Administrador**.
+
+### Suspensiones — `/api/suspension`
+
+- `POST /api/suspension` — **Recepcionista, Administrador** — body `{ userId, fineId?, reason, startDate, endDate? }`; estado inicial `Activa`.
+- `GET /api/suspension?page=&limit=&status=` — **Recepcionista, Administrador** — filtrable por `status` (`Activa` | `Finalizada` | `Revocada`).
+- `GET /api/suspension/:id` — **Recepcionista, Administrador**.
+- `PATCH /api/suspension/status/:id` — **Recepcionista, Administrador** — body `{ "newStatus": ... }` respetando `RecordSuspensionStatus` (`Activa → Finalizada | Revocada`).
+- `PATCH /api/suspension/:id` — **Recepcionista, Administrador** — exige que `endDate` sea posterior a `startDate`.
+- `DELETE /api/suspension/:id` — **Recepcionista, Administrador** — soft delete.
+
+### Incidencias — `/api/incident`
+
+- `POST /api/incident` — **Administrador, Recepcionista, Usuario** — body `{ userId, physicalCopyId?, loanId?, title, description, typeIncident }`; estado inicial `Pendiente`.
+- `GET /api/incident?page=&limit=&month=` — **Administrador, Recepcionista** — filtro opcional por mes.
+- `GET /api/incident/user/:userId?page=&limit=&month=` — **Administrador, Recepcionista, Usuario**.
+- `GET /api/incident/:id` — **Administrador, Recepcionista, Usuario** — incluye `user`, `physical` y `loan`.
+- `PATCH /api/incident/status/:id` — **Administrador, Recepcionista** — body `{ "newStatus": ... }` respetando `RecordIncidentStatus` (`Pendiente → En_Revision → Resuelta`).
+- `PATCH /api/incident/:id` — **Administrador, Recepcionista, Usuario** — edita título, descripción, tipo, `messageAdmin` y `status`.
+- `DELETE /api/incident/:id` — **Administrador, Recepcionista, Usuario** — soft delete.
+
+### Notificaciones — `/api/notification`
+
+- `POST /api/notification` — **Administrador, Recepcionista, Usuario** — body `{ userId, title, message, typeNotification }` (enum `NotificationType`).
+- `GET /api/notification/user/:userId?page=&limit=&type=` — **Administrador, Recepcionista, Usuario** — filtro opcional por `type`.
+- `GET /api/notification/:id` — **Administrador, Recepcionista, Usuario**.
+- `PATCH /api/notification/mark-all-as-read/:userId` — **Administrador, Recepcionista, Usuario** — marca como leídas todas las notificaciones del usuario.
+- `PATCH /api/notification/:id` — **Administrador, Recepcionista, Usuario**.
+- `DELETE /api/notification/:id` — **Administrador, Recepcionista, Usuario**.
+
+### Reportes — `/api/report`
+
+- `POST /api/report` — **Administrador, Recepcionista** — body `{ userId, name, description?, typeReport }`; el `userId` debe tener rol `Administrador` o `Recepcionista`.
+- `GET /api/report?page=&limit=&month=` — **Administrador, Recepcionista** — filtro opcional por mes.
+- `GET /api/report/user/:userId?page=&limit=&month=` — **Administrador, Recepcionista**.
+- `GET /api/report/:id` — **Administrador, Recepcionista**.
+- `PATCH /api/report/status/:id` — **Administrador, Recepcionista** — body `{ "isActive": true | false }`.
+- `PATCH /api/report/:id` — **Administrador, Recepcionista**.
+- `DELETE /api/report/:id` — **Administrador, Recepcionista** — soft delete.
+
+### Reseñas — `/api/review`
+
+- `POST /api/review` — **Usuario, Administrador, Recepcionista** — body `{ userId, bookId, rating (1-5), comment? }`; una reseña por pareja usuario/libro.
+- `GET /api/review?page=&limit=` — **Administrador, Recepcionista**.
+- `GET /api/review/user/:userId?page=&limit=` — **Usuario, Administrador, Recepcionista**.
+- `GET /api/review/book/:bookId?page=&limit=` — **Administrador, Recepcionista, Usuario**.
+- `GET /api/review/:id` — **Usuario, Administrador, Recepcionista**.
+- `PATCH /api/review/status/:id` — **Usuario, Administrador, Recepcionista** — body `{ "isActive": true | false }`.
+- `PATCH /api/review/:id` — **Usuario, Administrador, Recepcionista**.
+- `DELETE /api/review/:id` — **Administrador, Recepcionista**.
+
+### Favoritos — `/api/favorites`
+
+- `POST /api/favorites` — **Usuario, Recepcionista, Administrador** — body `{ userId, bookId }`; no se permiten duplicados por pareja usuario/libro.
+- `GET /api/favorites/user/:userId?page=&limit=` — **Usuario**.
+- `GET /api/favorites/:id` — **Usuario, Recepcionista, Administrador**.
+- `PATCH /api/favorites/:id` — **Usuario, Recepcionista, Administrador** — body `{ "isActive": true | false }`.
+- `DELETE /api/favorites/:id` — **Usuario, Recepcionista, Administrador**.
+
 ---
 
 ## Base de datos
@@ -401,7 +480,7 @@ pnpm prisma:seed:clear    # borra los datos sembrados en orden inverso
 pnpm prisma:seed --help   # imprime ayuda
 ```
 
-La ejecución imprime al final un resumen con los conteos por entidad (`permissions`, `roles`, `rolePermissions`, `users`, `sessions`, `refreshTokens`, `categories`, `subcategories`, `publishers`, `authors`, `books`, `bookAuthors`, `physicalCopies`, `requests`, `requestItems`, `loans`) y la lista de errores si alguno falló.
+La ejecución imprime al final un resumen con los conteos por entidad (`permissions`, `roles`, `rolePermissions`, `users`, `sessions`, `refreshTokens`, `categories`, `subcategories`, `publishers`, `authors`, `books`, `bookAuthors`, `physicalCopies`, `requests`, `requestItems`, `loans`, `fines`, `suspensions`, `favorites`, `reviews`, `notifications`, `reports`, `incidents`) y la lista de errores si alguno falló.
 
 Orden de ejecución (respeta las claves foráneas):
 
@@ -426,7 +505,14 @@ Orden de ejecución (respeta las claves foráneas):
 11. **Copias físicas** — 2 copias por libro (44 totales), con número de copia y ubicación derivados del ISBN.
 12. **Solicitudes** — `RequestsSeeder` crea solicitudes (3 hardcoded para los usuarios conocidos + aleatorias para los faker) con sus `RequestItem` referenciando copias físicas reales; los estados siguen la distribución `55% Aprobada / 23% Pendiente / 12% Rechazada / 10% Cancelada`.
 13. **Préstamos** — `LoansSeeder` crea un préstamo por cada `RequestItem` aprobado; estados distribuidos en `60% Activo / 25% Finalizado / 15% Vencido` con fechas coherentes (`returnDateReal` solo en los finalizados).
-14. **Sesiones y refresh tokens** — 60% de probabilidad por usuario, máximo 2 sesiones por usuario; cada sesión recibe refresh tokens con hash sha256.
+14. **Multas** — `FinesSeeder` crea una multa por cada préstamo en estado `Vencido` (si no hubiera ninguno, promueve hasta 3 préstamos para garantizar el sembrado); resuelve el usuario vía `RequestItem → Request`; estados `60% Pendiente / 30% Pagada / 10% Condonada`.
+15. **Suspensiones** — `SuspensionsSeeder` deriva suspensiones de las multas pendientes (≈60% de ellas); estados `60% Activa / 25% Finalizada / 15% Revocada` con `endDate` coherente.
+16. **Favoritos** — `FavoritesSeeder` asigna entre 0 y 4 libros a cada usuario sin duplicar la pareja (usuario, libro).
+17. **Reseñas** — `ReviewsSeeder` crea hasta 3 reseñas por usuario con `rating` 1-5 y comentario opcional.
+18. **Notificaciones** — `NotificationsSeeder` genera hasta 4 notificaciones por usuario a partir de plantillas alineadas con el enum `NotificationType`.
+19. **Reportes** — `ReportsSeeder` crea reportes para los usuarios con rol `Administrador` o `Recepcionista`, tipados por el enum `ReportType`.
+20. **Incidencias** — `IncidentsSeeder` crea entre 12 y 20 incidencias que pueden referenciar una copia física (`pyhsicalCopyId`) y/o un préstamo; estados `50% Pendiente / 30% En_Revision / 20% Resuelta`.
+21. **Sesiones y refresh tokens** — 60% de probabilidad por usuario, máximo 2 sesiones por usuario; cada sesión recibe refresh tokens con hash sha256.
 
 Las contraseñas de los 3 usuarios conocidos están hasheadas con `argon2` y son **`secreto1`**. Son las credenciales que imprime `printHelp()` y las que se usan en los archivos `rest/`.
 
@@ -462,7 +548,9 @@ rest/
 │   └── sessions/sessions.http
 ├── mailer/mailer.http
 ├── categories/{category,subcategory}/*.http
-├── books/book/book.http
+├── books/{book,authors,publisher,book-author,physical}/*.http
+├── requests/{request,loan,fine}/*.http
+├── general/{favorites,incident,notification,report,review,suspension}/*.http
 └── security/{permissions,role-permission}/*.http
 ```
 

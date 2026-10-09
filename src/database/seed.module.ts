@@ -16,6 +16,13 @@ import { BookAuthorSeeder } from './seeders/book-author.seeder.js';
 import { PhysicalCopiesSeeder } from './seeders/physical-copies.seeder.js';
 import { RequestsSeeder } from './seeders/requests.seeder.js';
 import { LoansSeeder } from './seeders/loans.seeder.js';
+import { FinesSeeder } from './seeders/fines.seeder.js';
+import { SuspensionsSeeder } from './seeders/suspensions.seeder.js';
+import { FavoritesSeeder } from './seeders/favorites.seeder.js';
+import { ReviewsSeeder } from './seeders/reviews.seeder.js';
+import { NotificationsSeeder } from './seeders/notifications.seeder.js';
+import { ReportsSeeder } from './seeders/reports.seeder.js';
+import { IncidentsSeeder } from './seeders/incidents.seeder.js';
 import { SeedServices } from './seed.services.js';
 
 @Module({
@@ -98,6 +105,41 @@ import { SeedServices } from './seed.services.js';
       inject: [PrismaService],
     },
     {
+      provide: FinesSeeder,
+      useFactory: (prisma: PrismaService) => new FinesSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: SuspensionsSeeder,
+      useFactory: (prisma: PrismaService) => new SuspensionsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: FavoritesSeeder,
+      useFactory: (prisma: PrismaService) => new FavoritesSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: ReviewsSeeder,
+      useFactory: (prisma: PrismaService) => new ReviewsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: NotificationsSeeder,
+      useFactory: (prisma: PrismaService) => new NotificationsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: ReportsSeeder,
+      useFactory: (prisma: PrismaService) => new ReportsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: IncidentsSeeder,
+      useFactory: (prisma: PrismaService) => new IncidentsSeeder(prisma),
+      inject: [PrismaService],
+    },
+    {
       provide: SeedServices,
       useFactory: (
         permissionsSeeder: PermissionsSeeder,
@@ -114,6 +156,13 @@ import { SeedServices } from './seed.services.js';
         physicalCopiesSeeder: PhysicalCopiesSeeder,
         requestsSeeder: RequestsSeeder,
         loansSeeder: LoansSeeder,
+        finesSeeder: FinesSeeder,
+        suspensionsSeeder: SuspensionsSeeder,
+        favoritesSeeder: FavoritesSeeder,
+        reviewsSeeder: ReviewsSeeder,
+        notificationsSeeder: NotificationsSeeder,
+        reportsSeeder: ReportsSeeder,
+        incidentsSeeder: IncidentsSeeder,
       ) =>
         new SeedServices(
           permissionsSeeder,
@@ -130,6 +179,13 @@ import { SeedServices } from './seed.services.js';
           physicalCopiesSeeder,
           requestsSeeder,
           loansSeeder,
+          finesSeeder,
+          suspensionsSeeder,
+          favoritesSeeder,
+          reviewsSeeder,
+          notificationsSeeder,
+          reportsSeeder,
+          incidentsSeeder,
         ),
       inject: [
         PermissionsSeeder,
@@ -146,6 +202,13 @@ import { SeedServices } from './seed.services.js';
         PhysicalCopiesSeeder,
         RequestsSeeder,
         LoansSeeder,
+        FinesSeeder,
+        SuspensionsSeeder,
+        FavoritesSeeder,
+        ReviewsSeeder,
+        NotificationsSeeder,
+        ReportsSeeder,
+        IncidentsSeeder,
       ],
     },
   ],
