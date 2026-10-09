@@ -21,3 +21,25 @@ export const RecordLoanStatus: Record<string, string[]> = {
   Finalizado: [],
   Vencido: ['Finalizado'],
 };
+
+
+// Record para los estados de los items de las solicitudes de libros
+export const RecordRequestItemStatus: Record<string, string[]> = {
+  Pendiente: ['Aprobado', 'Rechazado'],
+  Aprobado: ['Rechazado'],
+  Rechazado: [],
+};
+
+// Record para los estados de las multas
+export const RecordFineStatus: Record<string, string[]> = {
+  Pendiente: ['Pagada', 'Condenada'],
+  Pagada: [],
+  Condenada: [],
+}
+
+// Record para los estados de las suspensiones
+export const RecordSuspensionStatus: Record<string, string[]> = {
+  Activa: ['Finalizada', 'Revocada'],
+  Finalizada: [],
+  Revocada: [],
+}
