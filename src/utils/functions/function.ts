@@ -1,7 +1,8 @@
 import path from 'path';
 import fs from 'fs';
 import Handlebars from 'handlebars';
-import { BadRequestException } from '@nestjs/common';
+import { Socket } from 'socket.io';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { settings } from '../../config/settings.config.js';
 import type { SeedResult } from '../../database/interfaces/seed-result.interface.js';
 
@@ -90,4 +91,22 @@ export async function deleteStoredFile(storedPath: string): Promise<void> {
   if (fs.existsSync(targetPath)) {
     await fs.promises.unlink(targetPath);
   }
+}
+
+// Función para extraer el token de un socket
+export function extractToken(client: Socket): string {
+  const authToken = (client.handshake.auth as any)?.token;
+  if (authToken) return authToken;
+  const authHeader = client.handshake.headers['authorization'];
+  const parts = (authHeader as string)?.split(' ') ?? [];
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    throw new UnauthorizedException(
+      'No se proporcionó un token de autenticación válido',
+    );
+  }
+  const [type, token] = (authHeader as string)?.split(' ') ?? [];
+  if (type === 'Bearer' && token) return token;
+  throw new UnauthorizedException(
+    'No se proporcionó un token de autenticación válido',
+  );
 }

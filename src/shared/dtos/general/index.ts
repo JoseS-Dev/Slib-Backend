@@ -3,3 +3,4 @@ export * from './report/report.dtos.js';
 export * from './incident/incident.dtos.js';
 export * from './favorites/favorites.dtos.js';
 export * from './suspension/suspension.dtos.js';
+export * from './notification/notification.dtos.js';
