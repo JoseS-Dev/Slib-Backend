@@ -175,19 +175,9 @@ export class UsersSeeder {
   }
 
   async clear(): Promise<number> {
-    const knownEmails = [
-      'admin@slib.com',
-      'usuario@slib.com',
-      'recepcion@slib.com',
-    ];
-    const deleted = await this.prisma.user.deleteMany({
-      where: {
-        OR: [
-          { email: { in: knownEmails } },
-          { userName: { in: ['admin', 'juanperez', 'recepcion'] } },
-        ],
-      },
-    });
+    // El seed crea usuarios conocidos + aleatorios, por lo que hay que
+    // eliminar todos antes de borrar roles (FK users_roleId_fkey RESTRICT).
+    const deleted = await this.prisma.user.deleteMany({});
     return deleted.count;
   }
 }

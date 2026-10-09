@@ -1,8 +1,4 @@
-import type {
-  Role,
-  Permission,
-  RolePermission,
-} from '../../../generated/prisma/client.js';
+import type { Role, Permission } from '../../../generated/prisma/client.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 
 interface RolePermissionMatrix {
