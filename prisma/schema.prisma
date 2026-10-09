@@ -93,6 +93,26 @@ enum NotificationType {
   NUEVO_LIBRO_REGISTRADO  // Aviso general o a favoritos sobre la llegada de un nuevo libro
 }
 
+// Enum para los tipos de reportes de administración de los libros, usuarios y prestamos
+enum ReportType {
+  // --- Área de Préstamos ---
+  PRESTAMOS_ACTIVOS       // Listado de libros actualmente en poder de los usuarios
+  PRESTAMOS_VENCIDOS      // Reporte de usuarios morosos con fecha límite excedida
+  HISTORIAL_PRESTAMOS     // Histórico general de préstamos en un rango de fechas específico
+
+  // --- Área de Inventario y Catálogo ---
+  INVENTARIO_GENERAL      // Estado actual de todos los libros y ejemplares físicos
+  LIBROS_MAS_SOLICITADOS  // Ranking de los libros con mayor demanda o popularidad
+  EJEMPLARES_BAJA         // Reporte de libros perdidos, dañados o dados de baja definitiva
+
+  // --- Área Financiera / Multas ---
+  MULTAS_PENDIENTES       // Dinero total acumulado en multas por cobrar
+  MULTAS_RECAUDADAS       // Ingresos generados por multas pagadas en un período
+
+  // --- Área de Usuarios ---
+  USUARIOS_ACTIVOS        // Estadísticas de usuarios con mayor actividad o uso frecuente
+}
+
 // Modelo de roles del usuario
 model Role {
   id Int @id @default(autoincrement())
@@ -327,6 +347,7 @@ model PhysicalCopy {
 
   loans Loan[]
   requestItems RequestItem[]
+  incidents Incident[]
 
   @@index([bookId])
   @@map("physical_copies") // Mapea el modelo a la tabla "physical_copies" en la base de datos
@@ -387,6 +408,7 @@ model Loan {
   recepcionist User @relation(fields: [recepcionistId], references: [id])
 
   loans Fine[]
+  incidents Incident[]
 
   @@index([requestItemId])
   @@index([physicalCopyId])
@@ -484,7 +506,8 @@ model Report {
   userId Int
   name String
   description String?
-  typeReport String
+  typeReport ReportType
+  isActive Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
@@ -510,6 +533,8 @@ model Incident {
   deletedAt DateTime?
 
   user User @relation(fields: [userId], references: [id])
+  physical PhysicalCopy? @relation(fields: [pyhsicalCopyId], references: [id])
+  loan Loan? @relation(fields: [loanId], references: [id])
 
   @@index([userId])
   @@map("incidents") // Mapea el modelo a la tabla "incidents"
