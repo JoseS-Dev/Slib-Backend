@@ -18,12 +18,6 @@ interface RequestSeed {
   daysAgo: number;
 }
 
-interface RequestItemSeed {
-  requestIdx: number;
-  copyNumber: string;
-  status: 'Pendiente' | 'Aprobado' | 'Rechazado';
-}
-
 // Catálogo curado de solicitudes: cada usuario conocido tiene entre 1 y 2
 // solicitudes; los usuarios faker se completan con `fillRandom` para
 // mantener un volumen cercano a ~30 solicitudes en total.
@@ -92,11 +86,6 @@ export class RequestsSeeder {
     );
 
     // 1) Solicitudes de los 3 usuarios conocidos
-    const itemPlans: Array<{
-      requestIdx: number;
-      status: 'Pendiente' | 'Aprobado' | 'Rechazado';
-    }> = [];
-
     for (const seed of KNOWN_REQUEST_CATALOG) {
       const user = userByEmail.get(seed.userEmail);
       if (!user) continue;

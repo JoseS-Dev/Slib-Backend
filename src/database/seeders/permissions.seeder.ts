@@ -1,4 +1,3 @@
-import { fakerES as faker } from '@faker-js/faker';
 import type { Permission } from '../../../generated/prisma/client.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 
