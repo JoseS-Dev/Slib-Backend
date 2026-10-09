@@ -1,9 +1,9 @@
-import { 
-  Controller, 
-  Post, 
+import {
+  Controller,
+  Post,
   Query,
   Body,
-  BadRequestException
+  BadRequestException,
 } from '@nestjs/common';
 import { MailerService } from './mailer.service.js';
 import { settings } from '../../config/settings.config.js';
@@ -18,34 +18,29 @@ export class MailerController {
   @Public()
   async sendWelcome(
     @Query('email') email: string,
-    @Query('token') token: string
-  ){
-    if(!email || !token) throw new BadRequestException('Email y token son requeridos');
+    @Query('token') token: string,
+  ) {
+    if (!email || !token)
+      throw new BadRequestException('Email y token son requeridos');
     return this.mailerService.verifyToken(email, token);
   }
 
   @Post('set-password')
   @Public()
-  async sendSetPassword(
-    @Body() resetPasswordDto: ResetPasswordDto
-  ){
+  async sendSetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.mailerService.setPassword(resetPasswordDto);
   }
 
   @Post('forgot-password')
   @Public()
-  async sendForgotPassword(
-    @Body('email') email: string
-  ){
-    if(!email) throw new BadRequestException('Email es requerido');
-    return this.mailerService.sendForgotPasswordEmail({email});
+  async sendForgotPassword(@Body('email') email: string) {
+    if (!email) throw new BadRequestException('Email es requerido');
+    return this.mailerService.sendForgotPasswordEmail({ email });
   }
 
   @Post('reset-password')
   @Public()
-  async sendResetPassword(
-    @Body() resetPasswordDto: ResetPasswordDto
-  ){
+  async sendResetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.mailerService.resetPassword(resetPasswordDto);
   }
 }

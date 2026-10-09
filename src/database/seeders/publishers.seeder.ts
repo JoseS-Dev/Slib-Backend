@@ -7,14 +7,41 @@ interface PublisherSeed {
 }
 
 const PUBLISHER_CATALOG: ReadonlyArray<PublisherSeed> = [
-  { name: 'Editorial Planeta',         description: 'Grupo editorial español con presencia internacional.' },
-  { name: 'Penguin Random House',      description: 'Editorial líder en libros de ficción y no ficción.' },
-  { name: 'Anagrama',                  description: 'Editorial independiente de literatura contemporánea.' },
-  { name: 'Alfaguara',                 description: 'Sello de Penguin Random House especializado en literatura hispana.' },
-  { name: 'Editorial Sudamericana',    description: 'Editorial argentina con amplio catálogo literario.' },
-  { name: 'Fondo de Cultura Económica', description: 'Editorial mexicana-académica con presencia en toda Latinoamérica.' },
-  { name: 'Océano',                    description: 'Editorial especializada en libros ilustrados y de referencia.' },
-  { name: 'Ediciones Akal',            description: 'Editorial académica y de pensamiento.' },
+  {
+    name: 'Editorial Planeta',
+    description: 'Grupo editorial español con presencia internacional.',
+  },
+  {
+    name: 'Penguin Random House',
+    description: 'Editorial líder en libros de ficción y no ficción.',
+  },
+  {
+    name: 'Anagrama',
+    description: 'Editorial independiente de literatura contemporánea.',
+  },
+  {
+    name: 'Alfaguara',
+    description:
+      'Sello de Penguin Random House especializado en literatura hispana.',
+  },
+  {
+    name: 'Editorial Sudamericana',
+    description: 'Editorial argentina con amplio catálogo literario.',
+  },
+  {
+    name: 'Fondo de Cultura Económica',
+    description:
+      'Editorial mexicana-académica con presencia en toda Latinoamérica.',
+  },
+  {
+    name: 'Océano',
+    description:
+      'Editorial especializada en libros ilustrados y de referencia.',
+  },
+  {
+    name: 'Ediciones Akal',
+    description: 'Editorial académica y de pensamiento.',
+  },
 ];
 
 export class PublishersSeeder {

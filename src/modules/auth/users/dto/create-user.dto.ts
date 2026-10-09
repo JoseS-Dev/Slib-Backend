@@ -1,4 +1,4 @@
-import { createZodDto } from "nestjs-zod";
+import { createZodDto } from 'nestjs-zod';
 import { createUserDto, createUserAdminDto } from '../../../../shared/index.js';
 
 export class CreateUserDto extends createZodDto(createUserDto) {}

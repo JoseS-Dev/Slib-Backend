@@ -2,7 +2,11 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Injectable, StreamableFile } from '@nestjs/common';
 import type { ApiResponse } from '../../shared/interfaces/api.types.js';
-import type { CallHandler, ExecutionContext, NestInterceptor,} from '@nestjs/common';
+import type {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+} from '@nestjs/common';
 
 @Injectable()
 export class ApiResponseInterceptor<T> implements NestInterceptor<
@@ -56,8 +60,17 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<
 
         // Si es un Objeto, desestructuramos para separar 'data' y 'meta' del resto de propiedades
         const payloadObject = payload as Record<string, any>;
-        const { message, meta, total, page, lastPage, limit, totalPages, data, ...rest } =
-          payloadObject;
+        const {
+          message,
+          meta,
+          total,
+          page,
+          lastPage,
+          limit,
+          totalPages,
+          data,
+          ...rest
+        } = payloadObject;
 
         const finalMessage = message || defaultMessage;
 

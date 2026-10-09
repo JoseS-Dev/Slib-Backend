@@ -20,7 +20,7 @@ export class AppController {
 
   @Get('health')
   @Roles('Administrador')
-  async health(){
+  async health() {
     return await this.appService.health();
   }
 }

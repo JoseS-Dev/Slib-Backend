@@ -1,15 +1,15 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body,  
-  Param, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
   Delete,
   Query,
   ParseIntPipe,
   HttpException,
   HttpStatus,
-  HttpCode 
+  HttpCode,
 } from '@nestjs/common';
 import { settings } from '../../../config/settings.config.js';
 import { RolePermissionService } from './role-permission.service.js';
@@ -31,11 +31,22 @@ export class RolePermissionController {
   @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async findAll(
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination)
-      throw new HttpException('Parámetros de paginación inválidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination)
+      throw new HttpException(
+        'Parámetros de paginación inválidos',
+        HttpStatus.BAD_REQUEST,
+      );
     return this.rolePermissionService.findAll(page, limit);
   }
 
@@ -43,22 +54,44 @@ export class RolePermissionController {
   @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async findAllByRole(
-    @Param('roleId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) roleId: number,
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
+    @Param(
+      'roleId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    roleId: number,
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination)
-      throw new HttpException('Parámetros de paginación inválidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination)
+      throw new HttpException(
+        'Parámetros de paginación inválidos',
+        HttpStatus.BAD_REQUEST,
+      );
     return this.rolePermissionService.findAllByRole(roleId, page, limit);
   }
-
 
   @Delete('/role/:roleId/permission/:permissionId')
   @Roles('Administrador')
   @HttpCode(HttpStatus.OK)
   async remove(
-    @Param('roleId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) roleId: number,
-    @Param('permissionId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) permissionId: number
+    @Param(
+      'roleId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    roleId: number,
+    @Param(
+      'permissionId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    permissionId: number,
   ) {
     return this.rolePermissionService.remove(roleId, permissionId);
   }

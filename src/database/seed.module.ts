@@ -18,7 +18,6 @@ import { RequestsSeeder } from './seeders/requests.seeder.js';
 import { LoansSeeder } from './seeders/loans.seeder.js';
 import { SeedServices } from './seed.services.js';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({

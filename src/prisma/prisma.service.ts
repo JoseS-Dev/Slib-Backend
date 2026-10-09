@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { settings } from '../config/settings.config.js'
-import { PrismaClient } from '../../generated/prisma/client.js'
-import type { OnModuleInit, OnModuleDestroy } from "@nestjs/common";
-import type { ExtendedPrismaClient } from "../utils/prisma/extended.js";
-import { createExtendedPrismaClient } from "../utils/prisma/extended.js";
+import { Injectable } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { settings } from '../config/settings.config.js';
+import { PrismaClient } from '../../generated/prisma/client.js';
+import type { OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import type { ExtendedPrismaClient } from '../utils/prisma/extended.js';
+import { createExtendedPrismaClient } from '../utils/prisma/extended.js';
 
 @Injectable()
 export class PrismaService

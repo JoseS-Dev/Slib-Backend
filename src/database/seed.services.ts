@@ -60,7 +60,10 @@ export class SeedServices {
       this.logger.log(`Roles: ${counts.roles}`);
 
       // 3. Asociación rol-permiso
-      counts.rolePermissions = await this.rolePermissionSeeder.run(roles, permissions);
+      counts.rolePermissions = await this.rolePermissionSeeder.run(
+        roles,
+        permissions,
+      );
       this.logger.log(`Asociación rol-permiso: ${counts.rolePermissions}`);
 
       // 4. Usuarios
@@ -98,7 +101,11 @@ export class SeedServices {
       this.logger.log(`Libros: ${counts.books}`);
 
       // 10. Asociación libro-autor
-      counts.bookAuthors = await this.bookAuthorSeeder.run(books, authors, authorIndexesByIsbn);
+      counts.bookAuthors = await this.bookAuthorSeeder.run(
+        books,
+        authors,
+        authorIndexesByIsbn,
+      );
       this.logger.log(`Asociación libro-autor: ${counts.bookAuthors}`);
 
       // 11. Copias físicas (dependen de libros)
@@ -107,10 +114,15 @@ export class SeedServices {
       this.logger.log(`Copias físicas: ${counts.physicalCopies}`);
 
       // 12. Solicitudes (Request + RequestItem) — dependen de usuarios y copias físicas
-      const { requests, items } = await this.requestsSeeder.run(users, physicalCopies);
+      const { requests, items } = await this.requestsSeeder.run(
+        users,
+        physicalCopies,
+      );
       counts.requests = requests.length;
       counts.requestItems = items.length;
-      this.logger.log(`Solicitudes: ${counts.requests} (items: ${counts.requestItems})`);
+      this.logger.log(
+        `Solicitudes: ${counts.requests} (items: ${counts.requestItems})`,
+      );
 
       // 13. Préstamos — dependen de los items aprobados y de un recepcionista
       const loans = await this.loansSeeder.run(items, users);
@@ -133,9 +145,14 @@ export class SeedServices {
       this.logger.log('Seed finalizado correctamente.');
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Error desconocido durante el seed';
+        error instanceof Error
+          ? error.message
+          : 'Error desconocido durante el seed';
       errors.push(message);
-      this.logger.error(`Error durante el seed: ${message}`, error instanceof Error ? error.stack : undefined);
+      this.logger.error(
+        `Error durante el seed: ${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
     }
 
     const finishedAt = new Date();
@@ -186,18 +203,20 @@ export class SeedServices {
 
       this.logger.log(
         `Limpieza completada. Permisos: ${counts.permissions}, ` +
-        `Roles: ${counts.roles}, RolePermission: ${counts.rolePermissions}, ` +
-        `Usuarios: ${counts.users}, Categorías: ${counts.categories}, ` +
-        `Subcategorías: ${counts.subcategories}, Editoriales: ${counts.publishers}, ` +
-        `Autores: ${counts.authors}, Libros: ${counts.books}, ` +
-        `LibroAutor: ${counts.bookAuthors}, Copias: ${counts.physicalCopies}, ` +
-        `Solicitudes: ${counts.requests}, Items: ${counts.requestItems}, ` +
-        `Préstamos: ${counts.loans}, ` +
-        `Sesiones: ${counts.sessions}, RefreshTokens: ${counts.refreshTokens}`,
+          `Roles: ${counts.roles}, RolePermission: ${counts.rolePermissions}, ` +
+          `Usuarios: ${counts.users}, Categorías: ${counts.categories}, ` +
+          `Subcategorías: ${counts.subcategories}, Editoriales: ${counts.publishers}, ` +
+          `Autores: ${counts.authors}, Libros: ${counts.books}, ` +
+          `LibroAutor: ${counts.bookAuthors}, Copias: ${counts.physicalCopies}, ` +
+          `Solicitudes: ${counts.requests}, Items: ${counts.requestItems}, ` +
+          `Préstamos: ${counts.loans}, ` +
+          `Sesiones: ${counts.sessions}, RefreshTokens: ${counts.refreshTokens}`,
       );
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Error desconocido durante la limpieza';
+        error instanceof Error
+          ? error.message
+          : 'Error desconocido durante la limpieza';
       errors.push(message);
       this.logger.error(
         `Error durante la limpieza: ${message}`,

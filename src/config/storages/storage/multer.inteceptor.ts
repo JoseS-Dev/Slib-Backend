@@ -2,7 +2,11 @@ import multer from 'multer';
 import { Observable } from 'rxjs';
 import { MulterFactory } from '../factory/multer.factory.js';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type {CallHandler, ExecutionContext, NestInterceptor} from '@nestjs/common';
+import type {
+  CallHandler,
+  ExecutionContext,
+  NestInterceptor,
+} from '@nestjs/common';
 
 @Injectable()
 export class MulterInterceptor implements NestInterceptor {

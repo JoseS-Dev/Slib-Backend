@@ -8,7 +8,9 @@ interface PhysicalCopySeed {
 }
 
 // Genera 2 copias por libro del catálogo (Disponible / Disponible en ubicaciones distintas)
-function buildCatalog(books: Book[]): Array<PhysicalCopySeed & { bookId: number }> {
+function buildCatalog(
+  books: Book[],
+): Array<PhysicalCopySeed & { bookId: number }> {
   const out: Array<PhysicalCopySeed & { bookId: number }> = [];
   for (const book of books) {
     for (let n = 1; n <= 2; n += 1) {

@@ -3,16 +3,20 @@ import { NestFactory } from '@nestjs/core';
 import { SeedModule } from './seed.module.js';
 import { SeedServices } from './seed.services.js';
 import type { SeedResult } from './interfaces/seed-result.interface.js';
-import { printResult, parseMode, printHelp } from '../utils/functions/function.js';
-
-
+import {
+  printResult,
+  parseMode,
+  printHelp,
+} from '../utils/functions/function.js';
 
 /**
  * Función principal que se invoca desde el script de package.json.
  * Levanta un contexto de Nest con el SeedModule, ejecuta la acción
  * solicitada y cierra la aplicación.
  */
-export async function runSeed(argv: string[] = process.argv.slice(2)): Promise<SeedResult> {
+export async function runSeed(
+  argv: string[] = process.argv.slice(2),
+): Promise<SeedResult> {
   const mode = parseMode(argv);
   if (mode === 'help') {
     printHelp();
@@ -49,7 +53,8 @@ export async function runSeed(argv: string[] = process.argv.slice(2)): Promise<S
 
   try {
     const seedServices = app.get(SeedServices);
-    const result = mode === 'clear' ? await seedServices.clear() : await seedServices.run();
+    const result =
+      mode === 'clear' ? await seedServices.clear() : await seedServices.run();
     printResult(mode === 'clear' ? 'Limpieza' : 'Seed', result);
     return result;
   } finally {
@@ -57,4 +62,4 @@ export async function runSeed(argv: string[] = process.argv.slice(2)): Promise<S
   }
 }
 
-runSeed()
+runSeed();

@@ -1,4 +1,4 @@
 export class Session {
-    userId!: number;
-    isActive!: boolean;
+  userId!: number;
+  isActive!: boolean;
 }

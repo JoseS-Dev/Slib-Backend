@@ -1,7 +1,12 @@
 import argon2 from 'argon2';
 import crypton from 'crypto';
 import { JwtService } from '@nestjs/jwt';
-import { Injectable, NotFoundException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Session } from './entities/session.entity.js';
 import { settings } from '../../../config/settings.config.js';
 import { CreateSessionDto } from './dto/create-session.dto.js';
@@ -11,41 +16,41 @@ import { PrismaService } from '../../../prisma/prisma.service.js';
 export class SessionsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
   ) {}
 
   // Función para generar el token
   private async generateToken(
-    user: { id: number, email: string, role: string},
-    sessionId: number
-  ){
+    user: { id: number; email: string; role: string },
+    sessionId: number,
+  ) {
     const accessTokenJti = crypton.randomBytes(16).toString('hex');
     const refreshTokenJti = crypton.randomBytes(16).toString('hex');
 
     const payload = {
       sub: user.id,
       email: user.email,
-      role: user.role
-    }
+      role: user.role,
+    };
 
     const accessToken = this.jwtService.sign(
-      {...payload, jti: accessTokenJti},
-      {expiresIn: settings.security.jwtExpiresIn}
-    )
+      { ...payload, jti: accessTokenJti },
+      { expiresIn: settings.security.jwtExpiresIn },
+    );
 
     const refreshToken = this.jwtService.sign(
-      {...payload, jti: refreshTokenJti},
-      {expiresIn: settings.security.jwtRefreshExpiresIn}
-    )
+      { ...payload, jti: refreshTokenJti },
+      { expiresIn: settings.security.jwtRefreshExpiresIn },
+    );
 
     // Se hashea el token de refresco para guardarlo en la base de datos
     const hashedRefreshToken = crypton
-    .createHash('sha256')
-    .update(refreshToken)
-    .digest('hex');
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
 
     const expiresAt = new Date(
-      Date.now() + settings.security.jwtRefreshExpiresIn * 1000
+      Date.now() + settings.security.jwtRefreshExpiresIn * 1000,
     );
 
     // Se crea el refresh token en la base de datos
@@ -54,99 +59,122 @@ export class SessionsService {
         id: refreshTokenJti,
         sessionId,
         token: hashedRefreshToken,
-        expiresAt
-      }
+        expiresAt,
+      },
     });
 
-    return {accessToken, refreshToken};
+    return { accessToken, refreshToken };
   }
 
-  async login(createSessionDto: CreateSessionDto) : Promise<{data: Session, accessToken: string, refreshToken: string}> {
+  async login(
+    createSessionDto: CreateSessionDto,
+  ): Promise<{ data: Session; accessToken: string; refreshToken: string }> {
     // Se verifica que exista el usuario
     const existingUser = await this.prisma.extended.user.findUnique({
-      where: {email: createSessionDto.email},
+      where: { email: createSessionDto.email },
       include: {
-        role: true
-      }
+        role: true,
+      },
     });
-    if(!existingUser) throw new NotFoundException('No existe el usuario especificado');
-    if(existingUser.lockedUntil){
+    if (!existingUser)
+      throw new NotFoundException('No existe el usuario especificado');
+    if (existingUser.lockedUntil) {
       const now = new Date();
-      if(existingUser.lockedUntil > now){
-        const minutesRemaining = Math.ceil((existingUser.lockedUntil.getTime() - now.getTime()) / 60000);
-        throw new ForbiddenException(`El usuario está bloqueado. Intente nuevamente en ${minutesRemaining} minutos.`);
+      if (existingUser.lockedUntil > now) {
+        const minutesRemaining = Math.ceil(
+          (existingUser.lockedUntil.getTime() - now.getTime()) / 60000,
+        );
+        throw new ForbiddenException(
+          `El usuario está bloqueado. Intente nuevamente en ${minutesRemaining} minutos.`,
+        );
       }
     }
 
     // Se veriifica que la contraseña sea correcat y que el usuario esté verificado
-    const isPasswordValid = await argon2.verify(existingUser.password, createSessionDto.password);
-    if(!existingUser.verified) throw new ForbiddenException('El usuario no está verificado');
-    if(!isPasswordValid){
+    const isPasswordValid = await argon2.verify(
+      existingUser.password,
+      createSessionDto.password,
+    );
+    if (!existingUser.verified)
+      throw new ForbiddenException('El usuario no está verificado');
+    if (!isPasswordValid) {
       const newAttempts = (existingUser.failedLoginAttempts || 0) + 1;
       let newLockedUntil: Date | null = null;
-      if(newAttempts >= settings.rateLimit.maxFailedLoginAttempts){
+      if (newAttempts >= settings.rateLimit.maxFailedLoginAttempts) {
         newLockedUntil = new Date();
-        newLockedUntil.setMinutes(newLockedUntil.getMinutes() + settings.rateLimit.lockTimeMinutes);
+        newLockedUntil.setMinutes(
+          newLockedUntil.getMinutes() + settings.rateLimit.lockTimeMinutes,
+        );
       }
       await this.prisma.user.update({
-        where: {id: existingUser.id},
+        where: { id: existingUser.id },
         data: {
           failedLoginAttempts: newAttempts,
-          lockedUntil: newLockedUntil
-        }
+          lockedUntil: newLockedUntil,
+        },
       });
-      if(newLockedUntil){
-        throw new ForbiddenException(`El usuario ha sido bloqueado debido a múltiples intentos fallidos. Intente nuevamente en ${settings.rateLimit.lockTimeMinutes} minutos.`);
+      if (newLockedUntil) {
+        throw new ForbiddenException(
+          `El usuario ha sido bloqueado debido a múltiples intentos fallidos. Intente nuevamente en ${settings.rateLimit.lockTimeMinutes} minutos.`,
+        );
       }
-      const remainingAttempts = settings.rateLimit.maxFailedLoginAttempts - newAttempts;
-      throw new ForbiddenException(`Contraseña incorrecta. Le quedan ${remainingAttempts} intentos antes de que su cuenta sea bloqueada.`);
+      const remainingAttempts =
+        settings.rateLimit.maxFailedLoginAttempts - newAttempts;
+      throw new ForbiddenException(
+        `Contraseña incorrecta. Le quedan ${remainingAttempts} intentos antes de que su cuenta sea bloqueada.`,
+      );
     }
 
     // Al iniciar sesión se revocan explicitamente las sesiones y los tokens de refresh del usuario
     await this.prisma.session.updateMany({
-      where: {userId: existingUser.id, isActive: true},
-      data: {isActive: false}
+      where: { userId: existingUser.id, isActive: true },
+      data: { isActive: false },
     });
 
     await this.prisma.refreshToken.updateMany({
       where: {
-        session: {userId: existingUser.id},
-        expiresAt: {gt: new Date()},
+        session: { userId: existingUser.id },
+        expiresAt: { gt: new Date() },
       },
-      data: {isRevoked: true}
-    })
+      data: { isRevoked: true },
+    });
 
     const newSession = await this.prisma.session.create({
       data: {
         userId: existingUser.id,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
-    const {accessToken, refreshToken} = await this.generateToken(
-      {id: existingUser.id, email: existingUser.email, role: existingUser.role.name},
-      newSession.id
+    const { accessToken, refreshToken } = await this.generateToken(
+      {
+        id: existingUser.id,
+        email: existingUser.email,
+        role: existingUser.role.name,
+      },
+      newSession.id,
     );
-    return {data: newSession, accessToken, refreshToken};
+    return { data: newSession, accessToken, refreshToken };
   }
 
-  async refreshToken(rawRefreshToken: string) : Promise<{accessToken: string, refreshToken: string}> {
-    let payload: {sub: number, jti: string};
-    try{
+  async refreshToken(
+    rawRefreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    let payload: { sub: number; jti: string };
+    try {
       payload = await this.jwtService.verifyAsync(rawRefreshToken, {
         algorithms: [settings.security.jwtAlgorithm],
-      })
-    }
-    catch(error){
-      throw new UnauthorizedException('Tken de refresh Invalido')
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Tken de refresh Invalido');
     }
 
     // Se verifica que el token de refresh exista en la base de datos y que no esté revocado ni expirado
     const storedRefreshToken = await this.prisma.refreshToken.findUnique({
-      where: {id: payload.jti},
+      where: { id: payload.jti },
       include: {
-        session: true
-      }
-    })
+        session: true,
+      },
+    });
     if (
       !storedRefreshToken ||
       !storedRefreshToken.session.isActive ||
@@ -190,13 +218,13 @@ export class SessionsService {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       include: {
-        role: true
-      }
+        role: true,
+      },
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     const { accessToken, refreshToken } = await this.generateToken(
-      {id: user.id, email: user.email, role: user.role.name},
+      { id: user.id, email: user.email, role: user.role.name },
       storedRefreshToken.sessionId,
     );
 
@@ -206,7 +234,7 @@ export class SessionsService {
     };
   }
 
-  async logout(userId: number) : Promise<{message: string}>{
+  async logout(userId: number): Promise<{ message: string }> {
     // Se verifica que exista el usuario y la sesión
     const [existingUser, activeSession] = await Promise.all([
       this.prisma.extended.user.findUnique({ where: { id: userId } }),

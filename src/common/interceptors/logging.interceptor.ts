@@ -3,7 +3,11 @@ import { tap } from 'rxjs/operators';
 import type { Request, Response } from 'express';
 import { Injectable, Logger } from '@nestjs/common';
 import { correlationContext } from '../../utils/context/correlation.context.js';
-import type { NestInterceptor, ExecutionContext, CallHandler} from '@nestjs/common';
+import type {
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

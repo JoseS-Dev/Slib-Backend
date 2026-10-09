@@ -1,17 +1,17 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
   Patch,
-  Param, 
+  Param,
   Delete,
   HttpCode,
   HttpStatus,
   ParseIntPipe,
   Query,
   Req,
-  Res 
+  Res,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { SessionsService } from './sessions.service.js';
@@ -20,7 +20,10 @@ import { settings } from '../../../config/settings.config.js';
 import { CreateSessionDto } from './dto/create-session.dto.js';
 import { User } from '../../../common/decorators/user.decorator.js';
 import { Public } from '../../../common/decorators/public.decorator.js';
-import { cookieOptions, refreshCookieOptions } from '../../../utils/cookies/cookie.utils.js';
+import {
+  cookieOptions,
+  refreshCookieOptions,
+} from '../../../utils/cookies/cookie.utils.js';
 
 @Controller('sessions')
 export class SessionsController {
@@ -31,10 +34,11 @@ export class SessionsController {
   @HttpCode(HttpStatus.CREATED)
   async login(
     @Body() CreateSessionDto: CreateSessionDto,
-    @Res({passthrough: true}) res: Response,
-    @Req() req: Request
-  ){
-    const {data, accessToken, refreshToken} = await this.sessionsService.login(CreateSessionDto);
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ) {
+    const { data, accessToken, refreshToken } =
+      await this.sessionsService.login(CreateSessionDto);
     res.cookie(
       `${settings.security.cookieName}`,
       refreshToken,
@@ -47,8 +51,8 @@ export class SessionsController {
     );
     return {
       ...data,
-      accessToken
-    }
+      accessToken,
+    };
   }
 
   @Post('refresh')
@@ -57,23 +61,32 @@ export class SessionsController {
   async refreshToken(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ){
+  ) {
     const rawRefreshToken = req.cookies[settings.security.cookieName];
-    const {accessToken, refreshToken} = await this.sessionsService.refreshToken(rawRefreshToken);
-    res.cookie(`${settings.security.cookieName}`, refreshToken, refreshCookieOptions);
-    res.cookie(`${settings.security.cookieName}-access`, accessToken, cookieOptions);
+    const { accessToken, refreshToken } =
+      await this.sessionsService.refreshToken(rawRefreshToken);
+    res.cookie(
+      `${settings.security.cookieName}`,
+      refreshToken,
+      refreshCookieOptions,
+    );
+    res.cookie(
+      `${settings.security.cookieName}-access`,
+      accessToken,
+      cookieOptions,
+    );
     return {
       accessToken,
-      refreshToken
-    }
+      refreshToken,
+    };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(
     @User() user: SessionPayload,
-    @Res({passthrough: true}) res: Response
-  ){
+    @Res({ passthrough: true }) res: Response,
+  ) {
     res.clearCookie(`${settings.security.cookieName}`, refreshCookieOptions);
     res.clearCookie(`${settings.security.cookieName}-access`, cookieOptions);
     return this.sessionsService.logout(user.sub);
@@ -81,12 +94,11 @@ export class SessionsController {
 
   @Get('verify')
   @HttpCode(HttpStatus.OK)
-  async verify(@User() user: SessionPayload){
+  async verify(@User() user: SessionPayload) {
     return {
       message: 'Sesión válida',
       isAuthenticated: true,
       user: user,
     };
   }
-
 }

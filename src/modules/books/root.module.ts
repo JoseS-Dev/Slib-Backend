@@ -6,6 +6,12 @@ import { PublisherModule } from './publisher/publisher.module.js';
 import { PhysicalModule } from './physical/physical.module.js';
 
 @Module({
-  imports: [BookModule, AuthorsModule, BookAuthorModule, PublisherModule, PhysicalModule],
+  imports: [
+    BookModule,
+    AuthorsModule,
+    BookAuthorModule,
+    PublisherModule,
+    PhysicalModule,
+  ],
 })
 export class BooksModule {}

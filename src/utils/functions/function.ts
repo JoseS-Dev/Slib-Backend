@@ -3,24 +3,25 @@ import fs from 'fs';
 import Handlebars from 'handlebars';
 import { BadRequestException } from '@nestjs/common';
 import { settings } from '../../config/settings.config.js';
-import type {SeedResult} from '../../database/interfaces/seed-result.interface.js';
+import type { SeedResult } from '../../database/interfaces/seed-result.interface.js';
 
 // Función para colocar el .env correcto dependiendo del entorno
-export function getEnvFile(env:string = process.env['NODE_ENV'] || 'development'): string {
-    const envFile: Record<string, string> = {
-        development: '.env.development',
-        production: '.env.production',
-        test: '.env.test',
-    };
-    const fileName = envFile[env] || '.env.development';
-    return path.resolve(process.cwd(), fileName);
+export function getEnvFile(
+  env: string = process.env['NODE_ENV'] || 'development',
+): string {
+  const envFile: Record<string, string> = {
+    development: '.env.development',
+    production: '.env.production',
+    test: '.env.test',
+  };
+  const fileName = envFile[env] || '.env.development';
+  return path.resolve(process.cwd(), fileName);
 }
 
 // Funciones de la Semilla de la base de Datos
 export const printResult = (label: string, result: SeedResult): void => {
-  // eslint-disable-next-line no-console
   console.log(`\n=== ${label} ===`);
-  // eslint-disable-next-line no-console
+
   console.log(JSON.stringify(result, null, 2));
 };
 
@@ -38,7 +39,6 @@ export const parseMode = (argv: string[]): 'run' | 'clear' | 'help' => {
 };
 
 export const printHelp = (): void => {
-  // eslint-disable-next-line no-console
   console.log(`
     Uso: pnpm seed [opciones]
 
@@ -57,9 +57,14 @@ export const printHelp = (): void => {
 // Función para compilar los templates de Handlebars
 export function compileTemplate(templatePath: string, context: any) {
   const fileName = `${templatePath}.hbs`;
-  const filePath = path.join(process.cwd(), 
-    'src', 'modules', 'mailer', 'templates'
-  , fileName);
+  const filePath = path.join(
+    process.cwd(),
+    'src',
+    'modules',
+    'mailer',
+    'templates',
+    fileName,
+  );
   // Se verifica que exista el archivo del template
   if (!fs.existsSync(filePath)) {
     throw new BadRequestException(

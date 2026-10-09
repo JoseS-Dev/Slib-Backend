@@ -16,8 +16,8 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: settings.server.nodeEnv
-    ? ['error', 'warn', 'log']
-    : ['error', 'warn', 'log', 'debug', 'verbose'],
+      ? ['error', 'warn', 'log']
+      : ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
   const logger = new Logger('Bootstrap');
@@ -28,7 +28,7 @@ async function bootstrap() {
     new PrismaFilter(),
     new NotFoundFilter(),
     new exceptionFilter(),
-  )
+  );
   app.useGlobalInterceptors(
     new ApiResponseInterceptor(),
     new LoggingInterceptor(),
@@ -40,16 +40,16 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(helmet());
-  app.use(morgan(settings.server.nodeEnv 
-  === 'production' ? 'combined' : 'dev'));
-  app.use(cookieParser())
+  app.use(
+    morgan(settings.server.nodeEnv === 'production' ? 'combined' : 'dev'),
+  );
+  app.use(cookieParser());
 
   await app.listen(settings.server.port, () => {
     logger.log(
       `Servidor conectado en http://localhost:${settings.server.port}${settings.server.basePath}`,
-    )
-  })
-  
+    );
+  });
 }
 
 bootstrap().catch((error) => {

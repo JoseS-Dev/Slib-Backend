@@ -10,7 +10,7 @@ const ROLE_CATALOG: ReadonlyArray<RoleSeed> = [
   { name: 'Administrador', isDefault: false },
   { name: 'Recepcionista', isDefault: false },
   { name: 'Bibliotecario', isDefault: false },
-  { name: 'Usuario',       isDefault: true  },
+  { name: 'Usuario', isDefault: true },
 ];
 
 export class RolesSeeder {

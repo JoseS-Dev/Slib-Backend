@@ -1,6 +1,10 @@
 import crypton from 'crypto';
 import { fakerES as faker } from '@faker-js/faker';
-import type { Session, RefreshToken, User } from '../../../generated/prisma/client.js';
+import type {
+  Session,
+  RefreshToken,
+  User,
+} from '../../../generated/prisma/client.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import { settings } from '../../config/settings.config.js';
 
@@ -32,9 +36,13 @@ export class SessionsSeeder {
     const created: CreatedSessionBundle[] = [];
 
     for (const user of users) {
-      if (faker.datatype.boolean({ probability: 1 - sessionProbability })) continue;
+      if (faker.datatype.boolean({ probability: 1 - sessionProbability }))
+        continue;
 
-      const sessionCount = faker.number.int({ min: 1, max: maxSessionsPerUser });
+      const sessionCount = faker.number.int({
+        min: 1,
+        max: maxSessionsPerUser,
+      });
       for (let i = 0; i < sessionCount; i++) {
         const refreshTokenJti = crypton.randomBytes(16).toString('hex');
         const refreshToken = crypton.randomBytes(32).toString('hex');

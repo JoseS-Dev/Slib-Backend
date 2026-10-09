@@ -1,16 +1,16 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
   Delete,
   Query,
   ParseIntPipe,
   HttpCode,
   HttpStatus,
-  HttpException 
+  HttpException,
 } from '@nestjs/common';
 import { LoanService } from './loan.service.js';
 import { settings } from '../../../config/settings.config.js';
@@ -34,12 +34,23 @@ export class LoanController {
   @HttpCode(HttpStatus.OK)
   @Roles('Recepcionista', 'Administrador')
   async findAll(
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10,
-    @Query('status') status?: LoanStatus
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
+    @Query('status') status?: LoanStatus,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination) {
-      throw new HttpException('Parámetros de paginación invalidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination) {
+      throw new HttpException(
+        'Parámetros de paginación invalidos',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return this.loanService.findAll(page, limit, status);
   }
@@ -47,7 +58,13 @@ export class LoanController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @Roles('Recepcionista', 'Administrador')
-  async findOne(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string) {
+  async findOne(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+  ) {
     return this.loanService.findOne(+id);
   }
 
@@ -55,8 +72,12 @@ export class LoanController {
   @HttpCode(HttpStatus.OK)
   @Roles('Recepcionista', 'Administrador')
   async changeStatus(
-    @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string,
-    @Body('newStatus') newStatus: LoanStatus
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+    @Body('newStatus') newStatus: LoanStatus,
   ) {
     return this.loanService.changeStatus(+id, newStatus);
   }
@@ -64,14 +85,27 @@ export class LoanController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @Roles('Recepcionista', 'Administrador')
-  async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string, @Body() updateLoanDto: UpdateLoanDto) {
+  async update(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+    @Body() updateLoanDto: UpdateLoanDto,
+  ) {
     return this.loanService.update(+id, updateLoanDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @Roles('Administrador')
-  async remove(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string) {
+  async remove(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+  ) {
     return this.loanService.remove(+id);
   }
 }

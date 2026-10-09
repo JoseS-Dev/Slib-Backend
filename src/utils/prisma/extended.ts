@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../../generated/prisma/client.js'
+import { PrismaClient } from '../../../generated/prisma/client.js';
 
 // Función para crear una instancia extendida de PrismaClient con el adaptador PostgreSQL
 export function createExtendedPrismaClient(client: PrismaClient) {

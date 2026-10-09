@@ -1,5 +1,9 @@
 import { fakerES as faker } from '@faker-js/faker';
-import type { Loan, RequestItem, User } from '../../../generated/prisma/client.js';
+import type {
+  Loan,
+  RequestItem,
+  User,
+} from '../../../generated/prisma/client.js';
 import { LoanStatus } from '../../../generated/prisma/enums.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 
@@ -14,10 +18,7 @@ export class LoansSeeder {
    *   - 15% -> `Vencido`   (returnDate en el pasado, sin returnDateReal)
    * El recepcionista se resuelve por email con rol `Recepcionista`.
    */
-  async run(
-    items: RequestItem[],
-    users: User[],
-  ): Promise<Loan[]> {
+  async run(items: RequestItem[], users: User[]): Promise<Loan[]> {
     const created: Loan[] = [];
 
     const recepcionista = users.find((u) => u.email === 'recepcion@slib.com');
@@ -37,13 +38,22 @@ export class LoansSeeder {
       }
 
       const seed = pickSeedFor();
-      const loanDate = new Date(Date.now() - seed.loanDaysAgo * 24 * 60 * 60 * 1000);
-      const returnDate = new Date(loanDate.getTime() + seed.durationDays * 24 * 60 * 60 * 1000);
+      const loanDate = new Date(
+        Date.now() - seed.loanDaysAgo * 24 * 60 * 60 * 1000,
+      );
+      const returnDate = new Date(
+        loanDate.getTime() + seed.durationDays * 24 * 60 * 60 * 1000,
+      );
       const returnDateReal =
         seed.status === LoanStatus.Finalizado
           ? faker.date.between({
               from: loanDate,
-              to: new Date(Math.min(returnDate.getTime(), Date.now() - 24 * 60 * 60 * 1000)),
+              to: new Date(
+                Math.min(
+                  returnDate.getTime(),
+                  Date.now() - 24 * 60 * 60 * 1000,
+                ),
+              ),
             })
           : null;
 
@@ -70,7 +80,11 @@ export class LoansSeeder {
   }
 }
 
-function pickSeedFor(): { loanDaysAgo: number; durationDays: number; status: LoanStatus } {
+function pickSeedFor(): {
+  loanDaysAgo: number;
+  durationDays: number;
+  status: LoanStatus;
+} {
   const r = faker.number.float();
   if (r < 0.6) {
     return {

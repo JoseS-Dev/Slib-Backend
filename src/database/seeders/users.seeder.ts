@@ -26,20 +26,31 @@ export class UsersSeeder {
   async run(roles: Role[], options: UsersSeedOptions = {}): Promise<User[]> {
     const totalUsers = options.totalUsers ?? 15;
     const created: User[] = [];
-    const passwordHash = await argon2.hash(generatePassword(DEFAULT_PASSWORD_LENGTH));
+    const passwordHash = await argon2.hash(
+      generatePassword(DEFAULT_PASSWORD_LENGTH),
+    );
 
     const adminRole = roles.find((r) => r.name === 'Administrador');
     const recepcionistaRole = roles.find((r) => r.name === 'Recepcionista');
     const bibliotecarioRole = roles.find((r) => r.name === 'Bibliotecario');
     const usuarioRole = roles.find((r) => r.name === 'Usuario');
 
-    if (!adminRole || !recepcionistaRole || !bibliotecarioRole || !usuarioRole) {
-      throw new Error('Roles base no encontrados. Ejecuta primero el seeder de roles.');
+    if (
+      !adminRole ||
+      !recepcionistaRole ||
+      !bibliotecarioRole ||
+      !usuarioRole
+    ) {
+      throw new Error(
+        'Roles base no encontrados. Ejecuta primero el seeder de roles.',
+      );
     }
 
     // Usuario administrador conocido para login
     const adminEmail = 'admin@slib.com';
-    const existingAdmin = await this.prisma.user.findUnique({ where: { email: adminEmail } });
+    const existingAdmin = await this.prisma.user.findUnique({
+      where: { email: adminEmail },
+    });
     if (!existingAdmin) {
       const adminPassword = await argon2.hash('secreto1');
       const admin = await this.prisma.user.create({
@@ -61,7 +72,9 @@ export class UsersSeeder {
 
     // Usuario regular conocido para login
     const userEmail = 'usuario@slib.com';
-    const existingUser = await this.prisma.user.findUnique({ where: { email: userEmail } });
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: userEmail },
+    });
     if (!existingUser) {
       const userPassword = await argon2.hash('secreto1');
       const user = await this.prisma.user.create({
@@ -83,7 +96,9 @@ export class UsersSeeder {
 
     // Recepcionista de prueba
     const recepcionistaEmail = 'recepcion@slib.com';
-    const existingRecep = await this.prisma.user.findUnique({ where: { email: recepcionistaEmail } });
+    const existingRecep = await this.prisma.user.findUnique({
+      where: { email: recepcionistaEmail },
+    });
     if (!existingRecep) {
       const recepPassword = await argon2.hash('secreto1');
       const recep = await this.prisma.user.create({
@@ -104,9 +119,7 @@ export class UsersSeeder {
     }
 
     // Usuarios aleatorios con faker
-    const usedEmails = new Set(
-      created.map((u) => u.email),
-    );
+    const usedEmails = new Set(created.map((u) => u.email));
     let createdRandom = 0;
     let attempts = 0;
     const maxAttempts = totalUsers * 3;
@@ -115,12 +128,16 @@ export class UsersSeeder {
       attempts++;
       const firstName = truncate(faker.person.firstName(), 50);
       const lastName = truncate(faker.person.lastName(), 50);
-      const baseUserName = faker.internet.username({ firstName, lastName }).toLowerCase();
-      const userName = truncate(baseUserName.replace(/[^a-z0-9._-]/g, ''), 50) || `user${attempts}`;
+      const baseUserName = faker.internet
+        .username({ firstName, lastName })
+        .toLowerCase();
+      const userName =
+        truncate(baseUserName.replace(/[^a-z0-9._-]/g, ''), 50) ||
+        `user${attempts}`;
       const email = truncate(
-          faker.internet.email({ firstName, lastName }).toLowerCase(),
-          100,
-        );
+        faker.internet.email({ firstName, lastName }).toLowerCase(),
+        100,
+      );
       if (usedEmails.has(email)) continue;
 
       const phoneNumber = faker.string.numeric({ length: 10 });

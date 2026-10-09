@@ -14,7 +14,7 @@ import {
   ParseIntPipe,
   UploadedFile,
   UseInterceptors,
-  HttpException
+  HttpException,
 } from '@nestjs/common';
 import { BookService } from './book.service.js';
 import { CreateBookDto } from './dto/create-book.dto.js';
@@ -28,24 +28,24 @@ import { MulterInterceptor } from '../../../config/storages/storage/multer.intec
 export class BookController {
   constructor(
     private readonly bookService: BookService,
-    private readonly storageService: StorageService
+    private readonly storageService: StorageService,
   ) {}
 
   @Post()
   @UseInterceptors(MulterInterceptor)
   @HttpCode(HttpStatus.CREATED)
-  @Roles("Administrador")
+  @Roles('Administrador')
   async create(
     @Body() createBookDto: CreateBookDto,
     @UploadedFile() file: Express.Multer.File,
-    @Headers('x-upload') folder: string
+    @Headers('x-upload') folder: string,
   ) {
-    if(file){
+    if (file) {
       const data = {
         ...createBookDto,
         frontCoverUrl: this.storageService.getRelativeFilePathInSubfolder(
           folder,
-          file.filename
+          file.filename,
         ),
         mimeType: file.mimetype,
         fileSize: file.size,
@@ -57,78 +57,144 @@ export class BookController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador", "Recepcionista", "Usuario")
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
   async findAll(
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination)
-      throw new HttpException('Los parámetros de paginación son inválidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination)
+      throw new HttpException(
+        'Los parámetros de paginación son inválidos',
+        HttpStatus.BAD_REQUEST,
+      );
     return this.bookService.findAll(page, limit);
   }
 
   @Get('category/:categoryId')
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador", "Recepcionista", "Usuario")
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
   async findAllByCategory(
-    @Param('categoryId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) categoryId: number,
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
+    @Param(
+      'categoryId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    categoryId: number,
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination)
-      throw new HttpException('Los parámetros de paginación son inválidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination)
+      throw new HttpException(
+        'Los parámetros de paginación son inválidos',
+        HttpStatus.BAD_REQUEST,
+      );
     return this.bookService.findAllByCategory(categoryId, page, limit);
   }
 
   @Get('subcategory/:subcategoryId')
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador", "Recepcionista", "Usuario")
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
   async findAllBySubcategory(
-    @Param('subcategoryId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) subcategoryId: number,
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
+    @Param(
+      'subcategoryId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    subcategoryId: number,
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination)
-      throw new HttpException('Los parámetros de paginación son inválidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination)
+      throw new HttpException(
+        'Los parámetros de paginación son inválidos',
+        HttpStatus.BAD_REQUEST,
+      );
     return this.bookService.findAllBySubcategory(subcategoryId, page, limit);
   }
 
   @Get('publisher/:publisherId')
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador", "Recepcionista", "Usuario")
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
   async findAllByPublisher(
-    @Param('publisherId', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) publisherId: number,
-    @Query('page', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) limit: number = 10
+    @Param(
+      'publisherId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    publisherId: number,
+    @Query(
+      'page',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    page: number = 1,
+    @Query(
+      'limit',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    limit: number = 10,
   ) {
-    if(page < 1 || limit < 1 || limit > settings.server.maxPagination)
-      throw new HttpException('Los parámetros de paginación son inválidos', HttpStatus.BAD_REQUEST);
+    if (page < 1 || limit < 1 || limit > settings.server.maxPagination)
+      throw new HttpException(
+        'Los parámetros de paginación son inválidos',
+        HttpStatus.BAD_REQUEST,
+      );
     return this.bookService.findAllByPublisher(publisherId, page, limit);
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador", "Recepcionista", "Usuario")
-  async findOne(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string) {
+  @Roles('Administrador', 'Recepcionista', 'Usuario')
+  async findOne(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+  ) {
     return this.bookService.findOne(+id);
   }
 
   @Patch(':id')
   @UseInterceptors(MulterInterceptor)
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador", "Recepcionista")
+  @Roles('Administrador', 'Recepcionista')
   async update(
-    @Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string,
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
     @Body() updateBookDto: UpdateBookDto,
     @UploadedFile() file: Express.Multer.File,
-    @Headers('x-upload') folder: string
+    @Headers('x-upload') folder: string,
   ) {
-    if(file){
+    if (file) {
       const data = {
         ...updateBookDto,
         frontCoverUrl: this.storageService.getRelativeFilePathInSubfolder(
           folder,
-          file.filename
+          file.filename,
         ),
         mimeType: file.mimetype,
         fileSize: file.size,
@@ -140,8 +206,14 @@ export class BookController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @Roles("Administrador")
-  async remove(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST })) id: string) {
+  @Roles('Administrador')
+  async remove(
+    @Param(
+      'id',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.BAD_REQUEST }),
+    )
+    id: string,
+  ) {
     return this.bookService.remove(+id);
   }
 }

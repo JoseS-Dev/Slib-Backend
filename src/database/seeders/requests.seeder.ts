@@ -1,5 +1,10 @@
 import { fakerES as faker } from '@faker-js/faker';
-import type { PhysicalCopy, Request, RequestItem, User } from '../../../generated/prisma/client.js';
+import type {
+  PhysicalCopy,
+  Request,
+  RequestItem,
+  User,
+} from '../../../generated/prisma/client.js';
 import { RequestStatus } from '../../../generated/prisma/enums.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 
@@ -82,10 +87,15 @@ export class RequestsSeeder {
     }
 
     const userByEmail = new Map(users.map((u) => [u.email, u] as const));
-    const copyByNumber = new Map(allCopies.map((c) => [c.copyNumber, c] as const));
+    const copyByNumber = new Map(
+      allCopies.map((c) => [c.copyNumber, c] as const),
+    );
 
     // 1) Solicitudes de los 3 usuarios conocidos
-    const itemPlans: Array<{ requestIdx: number; status: 'Pendiente' | 'Aprobado' | 'Rechazado' }> = [];
+    const itemPlans: Array<{
+      requestIdx: number;
+      status: 'Pendiente' | 'Aprobado' | 'Rechazado';
+    }> = [];
 
     for (const seed of KNOWN_REQUEST_CATALOG) {
       const user = userByEmail.get(seed.userEmail);
@@ -110,9 +120,13 @@ export class RequestsSeeder {
         .filter((c): c is PhysicalCopy => Boolean(c));
       if (reqItemsToCreate.length === 0) continue;
 
-      const requestDate = new Date(Date.now() - seed.daysAgo * 24 * 60 * 60 * 1000);
+      const requestDate = new Date(
+        Date.now() - seed.daysAgo * 24 * 60 * 60 * 1000,
+      );
       const reasonCancellation =
-        seed.status === RequestStatus.Cancelada ? seed.reasonCancellation ?? 'Cancelada por duplicidad.' : null;
+        seed.status === RequestStatus.Cancelada
+          ? (seed.reasonCancellation ?? 'Cancelada por duplicidad.')
+          : null;
 
       const request = await this.prisma.request.create({
         data: {
@@ -138,11 +152,16 @@ export class RequestsSeeder {
 
     // 2) Solicitudes aleatorias para usuarios faker
     const nonKnownUsers = users.filter(
-      (u) => !['admin@slib.com', 'usuario@slib.com', 'recepcion@slib.com'].includes(u.email),
+      (u) =>
+        !['admin@slib.com', 'usuario@slib.com', 'recepcion@slib.com'].includes(
+          u.email,
+        ),
     );
 
     // Mezclamos las copias para no siempre pedir las mismas.
-    const shuffledCopies = [...allCopies].sort(() => faker.number.float() - 0.5);
+    const shuffledCopies = [...allCopies].sort(
+      () => faker.number.float() - 0.5,
+    );
 
     for (let i = 0; i < nonKnownUsers.length; i += 1) {
       const user = nonKnownUsers[i];
@@ -166,13 +185,16 @@ export class RequestsSeeder {
         else status = RequestStatus.Cancelada;
 
         const daysAgo = faker.number.int({ min: 1, max: 30 });
-        const requestDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+        const requestDate = new Date(
+          Date.now() - daysAgo * 24 * 60 * 60 * 1000,
+        );
 
         // 1 o 2 copias por solicitud
         const itemCount = faker.number.int({ min: 1, max: 2 });
         const pickedCopies: PhysicalCopy[] = [];
         for (let k = 0; k < itemCount; k += 1) {
-          const candidate = shuffledCopies[(i * 7 + n * 3 + k) % shuffledCopies.length];
+          const candidate =
+            shuffledCopies[(i * 7 + n * 3 + k) % shuffledCopies.length];
           if (candidate && !pickedCopies.find((p) => p.id === candidate.id)) {
             pickedCopies.push(candidate);
           }

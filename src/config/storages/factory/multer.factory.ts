@@ -15,7 +15,7 @@ export class MulterFactory {
   createMulterOptions() {
     const allowedFileTypes = this.configService.get<string[]>(
       'uploads.allowedFileTypes',
-    )     || [
+    ) || [
       'image/jpeg',
       'image/png',
       'image/gif',

@@ -4,8 +4,12 @@ import { Resend } from 'resend';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import type { OnModuleInit } from '@nestjs/common';
 import { settings } from '../../config/settings.config.js';
-import { CreateMailerDto, ForgotPasswordDto, ResetPasswordDto } from './dto/create-mailer.dto.js';
-import { PrismaService } from '../../prisma/prisma.service.js'
+import {
+  CreateMailerDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+} from './dto/create-mailer.dto.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 import { compileTemplate } from '../../utils/functions/function.js';
 
 @Injectable()
@@ -14,13 +18,13 @@ export class MailerService implements OnModuleInit {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  onModuleInit(){
-    try{
+  onModuleInit() {
+    try {
       const apiKey = settings.server.apiKey;
-      if(!apiKey) throw new Error('La clave de la API de Resend no está configurada')
-        this.resend = new Resend(apiKey);
-    }
-    catch(error){
+      if (!apiKey)
+        throw new Error('La clave de la API de Resend no está configurada');
+      this.resend = new Resend(apiKey);
+    } catch (error) {
       throw new Error(`Error al inicializar el servicio de correo: ${error}`);
     }
   }
@@ -62,11 +66,11 @@ export class MailerService implements OnModuleInit {
     return {
       success: true,
       message: 'Correo de bienvenida enviado correctamente',
-    }
+    };
   }
 
   // Método para enviar el correo de establecimiento de contraseña
-  async sendSetPasswordEmail(createMailerDto: CreateMailerDto){
+  async sendSetPasswordEmail(createMailerDto: CreateMailerDto) {
     const token = crypton.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 1 * 60 * 60 * 1000);
 
@@ -102,7 +106,7 @@ export class MailerService implements OnModuleInit {
     return {
       success: true,
       message: 'Correo de establecimiento de contraseña enviado correctamente',
-    }
+    };
   }
 
   // Método para la verificación la cuenta de un usuario a partir del email y el token de recibido por el correo
@@ -118,11 +122,18 @@ export class MailerService implements OnModuleInit {
         verificationToken: true,
         verificationTokenExpiry: true,
         verified: true,
-      }
+      },
     });
-    if(!user) throw new BadRequestException('Token de verificación inválido o usuario no encontrado');
-    if(user.verified) throw new BadRequestException('El usuario ya ha sido verificado');
-    if(user.verificationTokenExpiry && user.verificationTokenExpiry < new Date()) {
+    if (!user)
+      throw new BadRequestException(
+        'Token de verificación inválido o usuario no encontrado',
+      );
+    if (user.verified)
+      throw new BadRequestException('El usuario ya ha sido verificado');
+    if (
+      user.verificationTokenExpiry &&
+      user.verificationTokenExpiry < new Date()
+    ) {
       throw new BadRequestException('El token de verificación ha expirado');
     }
     // Se marca el usuario como verificado y se eliminan el token y la fecha de expiración
@@ -132,8 +143,8 @@ export class MailerService implements OnModuleInit {
         verified: true,
         verificationToken: null,
         verificationTokenExpiry: null,
-      }
-    })
+      },
+    });
   }
 
   // Envia un correo de confimarción de cambio de contraseña
@@ -154,8 +165,9 @@ export class MailerService implements OnModuleInit {
 
     return {
       success: true,
-      message: 'Correo de confirmación de cambio de contraseña enviado correctamente',
-    }
+      message:
+        'Correo de confirmación de cambio de contraseña enviado correctamente',
+    };
   }
 
   // Envia un correo de establecimiento de contraseña exitoso
@@ -175,8 +187,9 @@ export class MailerService implements OnModuleInit {
     });
     return {
       success: true,
-      message: 'Correo de confirmación de establecimiento de contraseña enviado correctamente',
-    }
+      message:
+        'Correo de confirmación de establecimiento de contraseña enviado correctamente',
+    };
   }
 
   // Método para enviar el correo de recuperación de contraseña y guarda el token en la base de datos
@@ -188,10 +201,10 @@ export class MailerService implements OnModuleInit {
         email: true,
         firstName: true,
         lastName: true,
-      }
+      },
     });
     if (!user) throw new BadRequestException('Usuario no encontrado');
-    
+
     const token = crypton.randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 1 * 60 * 60 * 1000);
 
@@ -201,7 +214,7 @@ export class MailerService implements OnModuleInit {
       data: {
         resetToken: token,
         resetTokenExpiry: expires,
-      }
+      },
     });
 
     // Se construye el link de recuperación de contraseña con el token
@@ -227,7 +240,7 @@ export class MailerService implements OnModuleInit {
     return {
       success: true,
       message: 'Correo de recuperación de contraseña enviado correctamente',
-    }
+    };
   }
 
   // Restablece la contraseña de un usuario a partir del token y el correo recibidos
@@ -315,7 +328,6 @@ export class MailerService implements OnModuleInit {
       success: true,
       message:
         'Contraseña establecida correctamente, por favor inicie sesión con su nueva contraseña',
-    }
+    };
   }
-
 }

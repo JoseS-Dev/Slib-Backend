@@ -4,8 +4,14 @@ import type { PrismaService } from '../../prisma/prisma.service.js';
 export class BookAuthorSeeder {
   constructor(private readonly prisma: PrismaService) {}
 
-  async run(books: Book[], authors: Author[], authorIndexesByIsbn: Map<string, number[]>): Promise<number> {
-    const authorByFirstName = new Map(authors.map((a) => [a.firstName, a] as const));
+  async run(
+    books: Book[],
+    authors: Author[],
+    authorIndexesByIsbn: Map<string, number[]>,
+  ): Promise<number> {
+    const authorByFirstName = new Map(
+      authors.map((a) => [a.firstName, a] as const),
+    );
     let created = 0;
 
     for (const book of books) {

@@ -5,23 +5,23 @@ import { PrismaService } from './prisma/prisma.service.js';
 export class AppService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async root(): Promise<Object> {
+  async root(): Promise<object> {
     return {
-      message: "API SLIB",
+      message: 'API SLIB',
       timestamp: new Date().toISOString(),
-    }
+    };
   }
 
-  async ping(): Promise<Object> {
+  async ping(): Promise<object> {
     return {
-      message: "pong",
+      message: 'pong',
       timestamp: new Date().toISOString(),
-    }
+    };
   }
 
-  async health(): Promise<Object> {
+  async health(): Promise<object> {
     return {
-      status: "healthy",
+      status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: {
@@ -31,9 +31,11 @@ export class AppService {
         heapTotal: process.memoryUsage().heapTotal,
       },
       database: {
-        status: (await this.prismaService.$queryRaw`SELECT 1`) ? "healthy" : "unhealthy",
+        status: (await this.prismaService.$queryRaw`SELECT 1`)
+          ? 'healthy'
+          : 'unhealthy',
         timestamp: new Date().toISOString(),
-      }
-    }
+      },
+    };
   }
 }

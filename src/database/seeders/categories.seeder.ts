@@ -7,14 +7,38 @@ interface CategorySeed {
 }
 
 const CATEGORY_CATALOG: ReadonlyArray<CategorySeed> = [
-  { name: 'Ficción',        description: 'Obras narrativas creadas a partir de la inventiva del autor.' },
-  { name: 'Ciencia',        description: 'Libros de divulgación y textos científicos.' },
-  { name: 'Historia',       description: 'Obras sobre hechos y procesos históricos.' },
-  { name: 'Literatura',     description: 'Poesía, ensayo, teatro y demás expresiones literarias.' },
-  { name: 'Infantil',       description: 'Material de lectura para niños y jóvenes.' },
-  { name: 'Académico',      description: 'Textos universitarios y materiales de investigación.' },
-  { name: 'Arte',           description: 'Libros sobre pintura, música, arquitectura y cine.' },
-  { name: 'Tecnología',     description: 'Programación, redes, inteligencia artificial y afines.' },
+  {
+    name: 'Ficción',
+    description: 'Obras narrativas creadas a partir de la inventiva del autor.',
+  },
+  {
+    name: 'Ciencia',
+    description: 'Libros de divulgación y textos científicos.',
+  },
+  {
+    name: 'Historia',
+    description: 'Obras sobre hechos y procesos históricos.',
+  },
+  {
+    name: 'Literatura',
+    description: 'Poesía, ensayo, teatro y demás expresiones literarias.',
+  },
+  {
+    name: 'Infantil',
+    description: 'Material de lectura para niños y jóvenes.',
+  },
+  {
+    name: 'Académico',
+    description: 'Textos universitarios y materiales de investigación.',
+  },
+  {
+    name: 'Arte',
+    description: 'Libros sobre pintura, música, arquitectura y cine.',
+  },
+  {
+    name: 'Tecnología',
+    description: 'Programación, redes, inteligencia artificial y afines.',
+  },
 ];
 
 export class CategoriesSeeder {
