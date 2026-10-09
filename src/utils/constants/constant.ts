@@ -43,3 +43,10 @@ export const RecordSuspensionStatus: Record<string, string[]> = {
   Finalizada: [],
   Revocada: [],
 }
+
+// Record para los estados de los incidentes
+export const RecordIncidentStatus: Record<string, string[]> = {
+  Pendiente: ['En_Revision', 'Resuelto'],
+  En_Revision: ['Resuelto'],
+  Resuelto: [],
+}
