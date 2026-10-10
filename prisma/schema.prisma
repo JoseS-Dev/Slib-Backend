@@ -66,31 +66,14 @@ enum RequestItemStatus {
 
 // Enum para los tipos de notificaciones para los usuarios
 enum NotificationType {
-  // --- Autenticación y Cuentas ---
-  BIENVENIDA              // Al registrarse por primera vez en el sistema
-  CAMBIO_ROL              // Cuando un administrador modifica los permisos o rol del usuario
-  
-  // --- Solicitudes y Reservas ---
-  SOLICITUD_CREADA        // Cuando el usuario solicita un libro
-  SOLICITUD_APROBADA      // Cuando el recepcionista aprueba la reserva
-  SOLICITUD_RECHAZADA     // Cuando la solicitud es rechazada
-  
-  // --- Préstamos y Devoluciones ---
-  PRESTAMO_REGISTRADO     // Cuando se entrega físicamente el ejemplar
-  RECORDATORIO_DEVOLUCION // Aviso previo a que se cumpla la fecha límite
-  PRESTAMO_VENCIDO        // Cuando pasa la fecha de entrega y no se ha devuelto
-  DEVOLUCION_COMPLETADA   // Cuando el usuario entrega el libro de vuelta con éxito
-  
-  // --- Sanciones y Multas ---
-  MULTA_GENERADA          // Cuando se aplica una multa por retraso o daño
-  SUSPENSION_APLICADA     // Cuando la cuenta del usuario es suspendida
-  
-  // --- Incidencias ---
-  INCIDENCIA_REPORTADA    // Cuando un usuario o recepcionista reporta un problema
-  INCIDENCIA_ACTUALIZADA  // Cuando el administrador responde (messageAdmin) o resuelve el ticket
-  
-  // --- Catálogo y Novedades ---
-  NUEVO_LIBRO_REGISTRADO  // Aviso general o a favoritos sobre la llegada de un nuevo libro
+  Informativa
+  Advertencia
+  Bienvenida
+  Solicitud
+  Incidencia
+  Suspension
+  Reporte
+  Multa
 }
 
 // Enum para los tipos de reportes de administración de los libros, usuarios y prestamos
