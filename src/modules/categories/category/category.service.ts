@@ -8,10 +8,14 @@ import { Category } from './entities/category.entity.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     // Se verifica que no exista una categoria con el mismo nombre
@@ -45,6 +49,20 @@ export class CategoryService {
     });
     if (!category)
       throw new BadRequestException('No se pudo crear la categoria');
+    // Se notifica a los administradores y recepcionista del sistema de la nueva categoria creada
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Nueva categoria creada',
+        message: `Se ha creado la categoria: ${category.name}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return category;
   }
 
@@ -153,6 +171,20 @@ export class CategoryService {
     });
     if (!category)
       throw new BadRequestException('No se pudo actualizar la categoria');
+    // Se notifica a los administradores y recepcionista del sistema de la categoria actualizada
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Categoria actualizada',
+        message: `Se ha actualizado la categoria: ${category.name}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return category;
   }
 
@@ -173,6 +205,20 @@ export class CategoryService {
       throw new BadRequestException(
         'No se pudo actualizar el estado de la categoria',
       );
+    // Se notifica a los administradores y recepcionista del sistema del cambio de estado
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Estado de categoria actualizado',
+        message: `Se ha actualizado el estado de la categoria: ${category.name}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return category;
   }
 
@@ -185,6 +231,20 @@ export class CategoryService {
     const category = await this.prisma.extended.category.softDelete(id);
     if (!category)
       throw new BadRequestException('No se pudo eliminar la categoria');
+    // Se notifica a los administradores y recepcionista del sistema de la categoria eliminada
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Categoria eliminada',
+        message: `Se ha eliminado la categoria: ${existingCategory.name}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Categoria eliminada correctamente' };
   }
 }

@@ -3,10 +3,14 @@ import { Report } from './entities/report.entity.js';
 import { CreateReportDto } from './dto/create-report.dto.js';
 import { UpdateReportDto } from './dto/update-report.dto.js';
 import { PrismaService } from "../../../prisma/prisma.service.js";
+import { NotificationService } from '../notification/notification.service.js';
 
 @Injectable()
 export class ReportService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createReportDto: CreateReportDto) : Promise<Report> {
     // Se verifica que el usuario exista y que sea un administrador o Recepcionista antes de crear el reporte
@@ -27,6 +31,18 @@ export class ReportService {
       data: createReportDto
     });
     if(!newReport) throw new BadRequestException('No se pudo crear el reporte');
+    // Se le notifica a los administradores de la creación de un reporte
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Reporte creado',
+        message: `Se ha creado un nuevo reporte con ID: ${newReport.id}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return newReport;
   }
 
@@ -143,6 +159,18 @@ export class ReportService {
       }
     });
     if(!report) throw new BadRequestException('No se encontró el reporte');
+    // Se le notifica a los administradores de la actualización de un reporte
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Reporte actualizado',
+        message: `Se ha actualizado el reporte con ID: ${report.id}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return report;
   }
 
@@ -157,6 +185,24 @@ export class ReportService {
       }
     });
     if(!report) throw new BadRequestException('No se encontró el reporte');
+    // Se le notifica a los administradores y al rol que hizo el reporte de la actualización del estado de un reporte
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Estado de reporte actualizado',
+        message: `Se ha actualizado el estado del reporte con ID: ${report.id}`,
+        typeNotification: 'Informativa'
+      });
+    }
+    await this.notificationService.create({
+      userId: report.userId,
+      title: 'Estado de reporte actualizado',
+      message: `Se ha actualizado el estado del reporte con ID: ${report.id}`,
+      typeNotification: 'Informativa'
+    });
     return report;
   }
 
@@ -165,6 +211,18 @@ export class ReportService {
     if(!existingReport) throw new NotFoundException('No se encontró el reporte');
     const deletedReport = await this.prisma.extended.report.softDelete(id);
     if(!deletedReport) throw new BadRequestException('No se pudo eliminar el reporte');
+    // Se le notifica a los administradores de la eliminación de un reporte
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Reporte eliminado',
+        message: `Se ha eliminado el reporte con ID: ${existingReport.id}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return {message: 'Reporte eliminado correctamente'};
   }
 }

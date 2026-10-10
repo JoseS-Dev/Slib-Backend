@@ -8,10 +8,14 @@ import { Subcategory } from './entities/subcategory.entity.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto.js';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class SubcategoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(
     createSubcategoryDto: CreateSubcategoryDto,
@@ -28,6 +32,22 @@ export class SubcategoryService {
     const subcategory = await this.prisma.subcategory.create({
       data: createSubcategoryDto,
     });
+    if (!subcategory)
+      throw new BadRequestException('No se pudo crear la subcategoria');
+    // Se notifica a los administradores y recepcionista del sistema de la nueva subcategoria creada
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Subcategoria creada',
+        message: `Se ha creado la subcategoria: ${subcategory.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return subcategory;
   }
 
@@ -136,6 +156,22 @@ export class SubcategoryService {
       where: { id },
       data: updateSubcategoryDto,
     });
+    if (!updatedSubcategory)
+      throw new BadRequestException('No se pudo actualizar la subcategoria');
+    // Se notifica a los administradores y recepcionista del sistema de la subcategoria actualizada
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Subcategoria actualizada',
+        message: `Se ha actualizado la subcategoria: ${updatedSubcategory.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return updatedSubcategory;
   }
 
@@ -148,6 +184,20 @@ export class SubcategoryService {
       await this.prisma.extended.subcategory.softDelete(id);
     if (!deletedSubcategory)
       throw new BadRequestException('No se pudo eliminar la subcategoria');
+    // Se notifica a los administradores y recepcionista del sistema de la subcategoria eliminada
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: {
+        role: { name: { in: ['Administrador', 'Recepcionista'] } },
+      },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Subcategoria eliminada',
+        message: `Se ha eliminado la subcategoria: ${subcategory.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return { message: 'Subcategoria eliminada correctamente' };
   }
 }

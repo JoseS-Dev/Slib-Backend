@@ -5,10 +5,14 @@ import { UpdateIncidentDto } from './dto/update-incident.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { IncidentType } from '../../../../generated/prisma/enums.js';
 import { RecordIncidentStatus } from '../../../utils/constants/constant.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class IncidentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createIncidentDto: CreateIncidentDto) : Promise<Incident> {
     // Se verifica que exista e usuario, el ejemplar fisico del libro y el prestamo antes de crear el incidente
@@ -45,6 +49,19 @@ export class IncidentService {
     const newIncident = await this.prisma.incident.create({
       data: createIncidentDto
     });
+    if(!newIncident) throw new BadRequestException('No se pudo crear el incidente');
+    // Se notifica a los administradores del sistema sobre la creación del nuevo incidente
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: {in: ['Administrador', 'Recepcionista']} } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Incidente creado',
+        message: `Se ha creado un nuevo incidente con ID: ${newIncident.id}`,
+        typeNotification: 'Incidencia'
+      });
+    }
     return newIncident;
   }
 
@@ -157,6 +174,18 @@ export class IncidentService {
       data: updateIncidentDto
     });
     if(!updatedIncident) throw new BadRequestException('No se pudo actualizar el incidente');
+    // Se notifica a los administradores y recepcionista del sistema de la actualización del incidente
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: { role: { name: {in: ['Administrador', 'Recepcionista']} } },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Incidente actualizado',
+        message: `Se ha actualizado el incidente con ID: ${updatedIncident.id}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return updatedIncident;
   }
 
@@ -179,6 +208,24 @@ export class IncidentService {
       data: { status: newStatus }
     });
     if(!updatedIncident) throw new BadRequestException('No se pudo actualizar el estado del incidente');
+    // Se notifica a los administradores, recpecionsita y el usuario en cuestión que el estado del incidente ha sido actualizado
+    const adminsAndReceptionists = await this.prisma.user.findMany({
+      where: { role: { name: {in: ['Administrador', 'Recepcionista']} } },
+    });
+    for (const user of adminsAndReceptionists) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Estado de incidente actualizado',
+        message: `Se ha actualizado el estado del incidente con ID: ${updatedIncident.id} a ${newStatus}`,
+        typeNotification: 'Informativa'
+      });
+    }
+    await this.notificationService.create({
+      userId: existingIncident.userId,
+      title: 'Estado de incidente actualizado',
+      message: `Se ha actualizado el estado del incidente con ID: ${updatedIncident.id} a ${newStatus}`,
+      typeNotification: 'Advertencia'
+    });
     return updatedIncident;
   }
 

@@ -78,22 +78,10 @@ enum NotificationType {
 
 // Enum para los tipos de reportes de administración de los libros, usuarios y prestamos
 enum ReportType {
-  // --- Área de Préstamos ---
-  PRESTAMOS_ACTIVOS       // Listado de libros actualmente en poder de los usuarios
-  PRESTAMOS_VENCIDOS      // Reporte de usuarios morosos con fecha límite excedida
-  HISTORIAL_PRESTAMOS     // Histórico general de préstamos en un rango de fechas específico
-
-  // --- Área de Inventario y Catálogo ---
-  INVENTARIO_GENERAL      // Estado actual de todos los libros y ejemplares físicos
-  LIBROS_MAS_SOLICITADOS  // Ranking de los libros con mayor demanda o popularidad
-  EJEMPLARES_BAJA         // Reporte de libros perdidos, dañados o dados de baja definitiva
-
-  // --- Área Financiera / Multas ---
-  MULTAS_PENDIENTES       // Dinero total acumulado en multas por cobrar
-  MULTAS_RECAUDADAS       // Ingresos generados por multas pagadas en un período
-
-  // --- Área de Usuarios ---
-  USUARIOS_ACTIVOS        // Estadísticas de usuarios con mayor actividad o uso frecuente
+  Prestamo
+  Libro
+  Usuario
+  Mantenimiento
 }
 
 // Modelo de roles del usuario
