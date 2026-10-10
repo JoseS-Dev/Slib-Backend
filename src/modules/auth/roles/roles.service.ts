@@ -8,10 +8,14 @@ import { Role } from './entities/role.entity.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
 import { UpdateRoleDto } from './dto/update-role.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class RolesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   // Crear un Rol
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
@@ -56,6 +60,18 @@ export class RolesService {
       });
     });
     if (!role) throw new BadRequestException('No se pudo crear el rol');
+    // Se envia una notificación a los administradores del sistema sobre la creación del nuevo rol
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Nuevo rol creado',
+        message: `Se ha creado un nuevo rol: ${role.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return role;
   }
 
@@ -165,6 +181,18 @@ export class RolesService {
       });
     });
     if (!role) throw new BadRequestException('No se pudo actualizar el rol');
+    // Se envia una notificación a los administradores del sistema sobre la actualización del rol
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Rol actualizado',
+        message: `Se ha actualizado el rol: ${role.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return role;
   }
 
@@ -184,6 +212,18 @@ export class RolesService {
     });
     if (!deletedRole)
       throw new BadRequestException('No se pudo eliminar el rol');
+    // Se envia una notificación a los administradores del sistema sobre la eliminación del rol
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Rol eliminado',
+        message: `Se ha eliminado el rol: ${existingRole.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return { message: 'Rol eliminado correctamente' };
   }
 }

@@ -7,13 +7,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity.js';
-import { CreateUserDto, CreateAdminUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { MailerService } from '../../mailer/mailer.service.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { CreateUserDto, CreateAdminUserDto } from './dto/create-user.dto.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailerService: MailerService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     // Se obtiene el rol del usuario a crear
@@ -44,6 +50,12 @@ export class UsersService {
       },
     });
     if (!newUser) throw new BadRequestException('No se pudo crear el usuario');
+    // Se envía un correo de bienvenida al usuario
+    await this.mailerService.sendWelcomeEmail({
+      email: newUser.email,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+    });
     return newUser;
   }
 
@@ -75,6 +87,19 @@ export class UsersService {
       },
     });
     if (!newUser) throw new BadRequestException('No se pudo crear el usuario');
+    // Se envia el correo de bienvenida al usuario con el correo del establecimiento de la contraseña
+    await Promise.all([
+      this.mailerService.sendWelcomeEmail({
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+      }),
+      this.mailerService.sendSetPasswordEmail({
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+      })
+    ])
     return newUser;
   }
 
@@ -208,6 +233,20 @@ export class UsersService {
       throw new BadRequestException(
         'No se pudo actualizar el estado del usuario',
       );
+    // Se manda a todos los administradores que un usuario base ha sido activado o desactivado
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: `Usuario ${isActive ? 'activado' : 'desactivado'}`,
+        message: `El usuario ${existingUser.firstName} ${existingUser.lastName} ha sido ${
+          isActive ? 'activado' : 'desactivado'
+        }`,
+        typeNotification: 'Informativa'
+      })
+    }
     return updatedUser;
   }
 
@@ -219,6 +258,18 @@ export class UsersService {
     const deletedUser = await this.prisma.extended.user.softDelete(id);
     if (!deletedUser)
       throw new BadRequestException('No se pudo eliminar el usuario');
+    // Se manda a todos los administradores que un usuario base ha sido eliminado
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: `Usuario eliminado`,
+        message: `El usuario ${existingUser.firstName} ${existingUser.lastName} ha sido eliminado`,
+        typeNotification: 'Advertencia'
+      })
+    }
     return { message: 'Usuario eliminado correctamente' };
   }
 }
