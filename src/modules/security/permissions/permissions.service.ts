@@ -8,10 +8,14 @@ import { Permission } from './entities/permission.entity.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CreatePermissionDto } from './dto/create-permission.dto.js';
 import { UpdatePermissionDto } from './dto/update-permission.dto.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class PermissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
     // Se verifica que no exista ya el permiso
@@ -25,6 +29,18 @@ export class PermissionsService {
     });
     if (!newPermission)
       throw new BadRequestException('No se pudo crear el permiso');
+    // Se envia una notificación a los administradores del sistema sobre la creación del nuevo permiso
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Permiso creado',
+        message: `Se ha creado el permiso: ${newPermission.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return newPermission;
   }
 
@@ -82,6 +98,18 @@ export class PermissionsService {
     });
     if (!updatedPermission)
       throw new BadRequestException('No se pudo actualizar el permiso');
+    // Se envia una notificación a los administradores del sistema sobre la actualización del permiso
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Permiso actualizado',
+        message: `Se ha actualizado el permiso: ${updatedPermission.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return updatedPermission;
   }
 
@@ -95,6 +123,18 @@ export class PermissionsService {
       await this.prisma.extended.permission.softDelete(id);
     if (!deletedPermission)
       throw new BadRequestException('No se pudo eliminar el permiso');
+    // Se envia una notificación a los administradores del sistema sobre la eliminación del permiso
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Permiso eliminado',
+        message: `Se ha eliminado el permiso: ${existingPermission.name}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return { message: 'Permiso eliminado exitosamente' };
   }
 }

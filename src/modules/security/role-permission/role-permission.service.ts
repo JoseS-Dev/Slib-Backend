@@ -28,9 +28,26 @@ export class RolePermissionService {
     if (!existingPermission)
       throw new NotFoundException('No existe el permiso especificado');
     // Se crea la asociación entre el rol y el permiso
-    return this.prisma.rolePermission.create({
+    const createdRolePermission = await this.prisma.rolePermission.create({
       data: createRolePermissionDto,
     });
+    if(!createdRolePermission)
+      throw new BadRequestException('No se pudo crear la asociación entre el rol y el permiso');
+    // Se notifica a los administradores del sistema sobre la creación de la nueva asociación entre el rol y el permiso
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: 'Asociación entre rol y permiso creada',
+          message: `Se ha creado la asociación entre el rol: ${existingRole.name} y el permiso: ${existingPermission.name}`,
+          typeNotification: 'Informativa',
+        },
+      });
+    }
+    return createdRolePermission;
   }
 
   async findAll(
@@ -112,6 +129,18 @@ export class RolePermissionService {
           permissionId,
         },
       },
+      include: {
+        role: {
+          omit: {
+            deletedAt: true,
+          },
+        },
+        permission: {
+          omit: {
+            deletedAt: true,
+          },
+        },
+      }
     });
     if (!existingRolePermission)
       throw new NotFoundException(
@@ -130,6 +159,20 @@ export class RolePermissionService {
       throw new BadRequestException(
         'No se pudo eliminar la relación entre el rol y el permiso especificados',
       );
+    // Se notifica a los administradores del sistema sobre la eliminación de la relación entre el rol y el permiso
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: 'Relación entre rol y permiso eliminada',
+          message: `Se ha eliminado la relación entre el rol: ${existingRolePermission.role.name} y el permiso: ${existingRolePermission.permission.name}`,
+          typeNotification: 'Informativa',
+        },
+      });
+    }
     return { message: 'Relación entre rol y permiso eliminada exitosamente' };
   }
 }
