@@ -5,8 +5,10 @@ import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { SwaggerModule } from '@nestjs/swagger';
 import { settings } from './config/settings.config.js';
 import { PrismaFilter } from './common/filters/prisma.filter.js';
+import { swaggerConfig } from './config/swagger/swagger.config.js';
 import { ZodValidationFilter } from './common/filters/zod.filter.js';
 import { NotFoundFilter } from './common/filters/not-found.filter.js';
 import { exceptionFilter } from './common/filters/exception.filter.js';
@@ -44,6 +46,17 @@ async function bootstrap() {
     morgan(settings.server.nodeEnv === 'production' ? 'combined' : 'dev'),
   );
   app.use(cookieParser());
+
+  // Swagger
+  if (settings.server.nodeEnv !== 'production') {
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup(`${settings.server.basePath}/docs`, app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        customSiteTitle: 'Skillio API Docs',
+      },
+    });
+  }
 
   await app.listen(settings.server.port, () => {
     logger.log(
