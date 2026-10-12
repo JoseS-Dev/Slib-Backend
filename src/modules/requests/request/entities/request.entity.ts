@@ -1,5 +1,5 @@
 import { RequestStatus } from '../../../../../generated/prisma/enums.js';
-
+import { User } from '../../../auth/users/entities/user.entity.js';
 export class Request {
   id!: number;
   userId!: number;
@@ -11,4 +11,5 @@ export class Request {
   createdAt!: Date;
   updatedAt!: Date;
   deletedAt?: Date | null;
+  user?: User;
 }

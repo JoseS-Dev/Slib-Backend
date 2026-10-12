@@ -9,10 +9,14 @@ import { UpdateRequestDto } from './dto/update-request.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { RequestStatus } from '../../../../generated/prisma/enums.js';
 import { RecordRequestStatus } from '../../../utils/constants/constant.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class RequestService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async create(createRequestDto: CreateRequestDto): Promise<Request> {
     // Se verifica que exista el usuario y el libro que esta solicitado
@@ -41,10 +45,23 @@ export class RequestService {
           items: true,
         },
       });
+
       return request;
     });
     if (!newRequest)
       throw new BadRequestException('No se pudo crear la solicitud');
+    // Se le notifica a los recpeccionista de la creación de una solicitud de un libro
+    const receptionists = await this.prisma.user.findMany({
+      where: { role: { name: 'Recepcionista' } },
+    });
+    for (const receptionist of receptionists) {
+      await this.notificationService.create({
+        userId: receptionist.id,
+        title: 'Nueva solicitud',
+        message: `El usuario ${existingUser.firstName} ${existingUser.lastName} ha creado una nueva solicitud con ID: ${newRequest.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return newRequest;
   }
 
@@ -156,6 +173,18 @@ export class RequestService {
     });
     if (!updatedRequest)
       throw new BadRequestException('No se pudo actualizar la solicitud');
+    // Se le notifica a los recepcionistas de la actualización de una solicitud
+    const receptionists = await this.prisma.user.findMany({
+      where: { role: { name: 'Recepcionista' } },
+    });
+    for (const receptionist of receptionists) {
+      await this.notificationService.create({
+        userId: receptionist.id,
+        title: 'Solicitud actualizada',
+        message: `El usuario ${existingRequest.user!.firstName} ${existingRequest.user!.lastName} ha actualizado su solicitud con ID: ${updatedRequest.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return updatedRequest;
   }
 
@@ -210,10 +239,30 @@ export class RequestService {
           : null,
     };
 
-    return this.prisma.request.update({
+    const updatedRequest = await this.prisma.request.update({
       where: { id },
       data: updatedData,
     });
+    if(!updatedRequest) throw new BadRequestException('No se pudo actualizar el estado de la solicitud');
+    // Se le notifica a los recepcionistas y al usuario que hubo un cambio de estado en la solicitud
+    const receptionists = await this.prisma.user.findMany({
+      where: { role: { name: 'Recepcionista' } },
+    });
+    for (const receptionist of receptionists) {
+      await this.notificationService.create({
+        userId: receptionist.id,
+        title: 'Estado de solicitud actualizado',
+        message: `El usuario ${existingRequest.user!.firstName} ${existingRequest.user!.lastName} ha cambiado el estado de su solicitud con ID: ${updatedRequest.id} a ${newStatus}`,
+        typeNotification: 'Informativa',
+      });
+    }
+    await this.notificationService.create({
+      userId: existingRequest.userId,
+      title: 'Estado de solicitud actualizado',
+      message: `Su solicitud con ID: ${updatedRequest.id} ha cambiado de estado a ${newStatus}`,
+      typeNotification: 'Informativa',
+    });
+    return updatedRequest;
   }
 
   async remove(id: number): Promise<{ message: string }> {
@@ -237,6 +286,18 @@ export class RequestService {
     });
     if (!deletedRequest)
       throw new BadRequestException('No se pudo eliminar la solicitud');
+    // Se le notifica a los recepcionistas de la eliminación de una solicitud
+    const receptionists = await this.prisma.user.findMany({
+      where: { role: { name: 'Recepcionista' } },
+    });
+    for (const receptionist of receptionists) {
+      await this.notificationService.create({
+        userId: receptionist.id,
+        title: 'Solicitud eliminada',
+        message: `La solicitud con ID: ${id} ha sido eliminada`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Solicitud eliminada correctamente' };
   }
 }

@@ -5,10 +5,14 @@ import { CreateSuspensionDto } from './dto/create-suspension.dto.js';
 import { UpdateSuspensionDto } from './dto/update-suspension.dto.js';
 import { SuspensionStatus } from '../../../../generated/prisma/enums.js';
 import { RecordSuspensionStatus } from '../../../utils/constants/constant.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class SuspensionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async create(createSuspensionDto: CreateSuspensionDto) : Promise<Suspension> {
     // Se verifica que exista el usuario y la multa
@@ -33,6 +37,13 @@ export class SuspensionService {
       data: createSuspensionDto
     });
     if(!newSuspension) throw new BadRequestException('No se pudo crear la suspensión.');
+    // Se le notifica al usuario que ha sido suspendido
+    await this.notificationService.create({
+      userId: newSuspension.userId,
+      title: 'Suspensión creada',
+      message: `Ha sido suspendido desde ${newSuspension.startDate.toISOString()} hasta ${newSuspension.endDate?.toISOString()}`,
+      typeNotification: 'Informativa'
+    })
     return newSuspension;
   }
 
@@ -107,6 +118,24 @@ export class SuspensionService {
       data: updateSuspensionDto,
     });
     if(!updatedSuspension) throw new BadRequestException('No se pudo actualizar la suspensión.');
+    // Se notifica a los administradores y al usuario en cuestión que su cuenta ha sido actualizada
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Suspensión actualizada',
+        message: `La suspensión del usuario ${existingSuspension.userId} ha sido actualizada. Nueva fecha de finalización: ${updatedSuspension.endDate?.toISOString()}`,
+        typeNotification: 'Informativa'
+      })
+    }
+    await this.notificationService.create({
+      userId: existingSuspension.userId,
+      title: 'Suspensión actualizada',
+      message: `Su suspensión ha sido actualizada. Nueva fecha de finalización: ${updatedSuspension.endDate?.toISOString()}`,
+      typeNotification: 'Informativa'
+    })
     return updatedSuspension;
   }
 
@@ -131,6 +160,24 @@ export class SuspensionService {
       },
     });
     if(!updatedSuspension) throw new BadRequestException('No se pudo actualizar el estado de la suspensión.');
+    // Se le notifica a los administradores y al usuario en cuestión que su suspensión ha sido actualizada
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Estado de suspensión actualizado',
+        message: `La suspensión del usuario ${existingSuspension.userId} ha sido actualizada a ${newStatus}.`,
+        typeNotification: 'Informativa'
+      })
+    }
+    await this.notificationService.create({
+      userId: existingSuspension.userId,
+      title: 'Estado de suspensión actualizado',
+      message: `Su suspensión ha sido actualizada a ${newStatus}.`,
+      typeNotification: 'Informativa'
+    }) 
     return updatedSuspension;
   }
 
@@ -141,6 +188,18 @@ export class SuspensionService {
     // Se elimina la suspensión
     const deletedSuspension = await this.prisma.extended.suspension.softDelete(id)
     if(!deletedSuspension) throw new BadRequestException('No se pudo eliminar la suspensión.');
+    // Se le notifica a los administradores que se elimino la suspensión de un usuario
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Suspensión eliminada',
+        message: `La suspensión del usuario ${existingSuspension.userId} ha sido eliminada.`,
+        typeNotification: 'Informativa'
+      })
+    }
     return { message: 'Suspensión eliminada correctamente.' };
   }
 }
