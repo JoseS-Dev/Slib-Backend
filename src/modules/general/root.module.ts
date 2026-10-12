@@ -7,6 +7,13 @@ import { SuspensionModule } from './suspension/suspension.module.js';
 import { NotificationModule } from './notification/notification.module.js';
 
 @Module({
-  imports: [SuspensionModule, FavoritesModule, ReviewModule, ReportModule, IncidentModule, NotificationModule],
+  imports: [
+    SuspensionModule,
+    FavoritesModule,
+    ReviewModule,
+    ReportModule,
+    IncidentModule,
+    NotificationModule,
+  ],
 })
 export class GeneralModule {}
