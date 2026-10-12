@@ -38,7 +38,7 @@ export class PermissionsService {
         userId: admin.id,
         title: 'Permiso creado',
         message: `Se ha creado el permiso: ${newPermission.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return newPermission;
@@ -47,7 +47,13 @@ export class PermissionsService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Permission[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Permission[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [permissions, total] = await Promise.all([
       this.prisma.extended.permission.findMany({
         skip: (page - 1) * limit,
@@ -60,7 +66,7 @@ export class PermissionsService {
       this.prisma.extended.permission.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: permissions, total, totalPages };
+    return { data: permissions, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Permission> {
@@ -107,7 +113,7 @@ export class PermissionsService {
         userId: admin.id,
         title: 'Permiso actualizado',
         message: `Se ha actualizado el permiso: ${updatedPermission.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return updatedPermission;
@@ -132,7 +138,7 @@ export class PermissionsService {
         userId: admin.id,
         title: 'Permiso eliminado',
         message: `Se ha eliminado el permiso: ${existingPermission.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return { message: 'Permiso eliminado exitosamente' };
