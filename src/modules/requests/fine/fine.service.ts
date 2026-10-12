@@ -5,10 +5,14 @@ import { UpdateFineDto } from './dto/update-fine.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { FineStatus } from '../../../../generated/prisma/enums.js';
 import { RecordFineStatus } from '../../../utils/constants/constant.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class FineService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async create(createFineDto: CreateFineDto) : Promise<Fine> {
     // Se verifica que exista el usuario y el prestamo que este un estado de Vencido
@@ -27,6 +31,13 @@ export class FineService {
       data: createFineDto
     });
     if(!newFine) throw new NotFoundException('No se pudo crear la multa.');
+    // Se le notifica al usuario que ha recibido una multa
+    await this.notificationService.create({
+      userId: newFine.userId,
+      title: 'Multa recibida',
+      message: `Ha recibido una multa por un monto de ${newFine.amount} debido a ${newFine.reason}`,
+      typeNotification: 'Informativa'
+    })
     return newFine;
   }
 
@@ -94,6 +105,18 @@ export class FineService {
       data: updateFineDto,
     });
     if(!updatedFine) throw new NotFoundException('No se pudo actualizar la multa.');
+    // Se le notifica a los administradores de la actualización de una multa
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Multa actualizada',
+        message: `La multa con id ${updatedFine.id} ha sido actualizada. Nuevo estado: ${updatedFine.status}`,
+        typeNotification: 'Informativa'
+      });
+    }
     return updatedFine;
   }
 
@@ -118,6 +141,24 @@ export class FineService {
       },
     });
     if(!updatedFine) throw new NotFoundException('No se pudo actualizar el estado de la multa.');
+    // Se le notifica a los administradores y al usaurio en cuestión que su estado de multa cambio
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Estado de multa actualizado',
+        message: `La multa con id ${updatedFine.id} ha sido actualizada. Nuevo estado: ${updatedFine.status}`,
+        typeNotification: 'Informativa'
+      });
+    }
+    await this.notificationService.create({
+      userId: existingFine.userId,
+      title: 'Estado de multa actualizado',
+      message: `Su multa con id ${updatedFine.id} ha sido actualizada. Nuevo estado: ${updatedFine.status}`,
+      typeNotification: 'Informativa'
+    });
     return updatedFine;
   }
 
@@ -130,6 +171,18 @@ export class FineService {
       where: { id },
     });
     if(!deletedFine) throw new NotFoundException('No se pudo eliminar la multa.');
+    // Se le notifica a los administradores que se elimino una multa
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Multa eliminada',
+        message: `La multa con id ${deletedFine.id} ha sido eliminada.`,
+        typeNotification: 'Informativa'
+      });
+    }
     return { message: 'Multa eliminada correctamente.' };
   }
 }
