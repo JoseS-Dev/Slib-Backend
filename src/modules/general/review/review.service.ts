@@ -3,10 +3,14 @@ import { Review } from './entities/review.entity.js';
 import { CreateReviewDto } from './dto/create-review.dto.js';
 import { UpdateReviewDto } from './dto/update-review.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js'
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class ReviewService {
-  constructor(private readonly prisma: PrismaService){}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ){}
 
   async create(createReviewDto: CreateReviewDto) : Promise<Review> {
     // Se verifica que exista el usuario y el libro en cuestión
@@ -32,6 +36,18 @@ export class ReviewService {
       data: createReviewDto
     });
     if(!newReview) throw new BadRequestException('No se pudo crear la reseña');
+    // Se le notifica a los administradores que recibió el libro
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Nueva reseña',
+        message: `El usuario ${existingUser.firstName} ${existingUser.lastName} ha creado una nueva reseña para el libro ${existingBook?.title}`,
+        typeNotification: 'Informativa'
+      })
+    }
     return newReview;
   }
 
@@ -132,6 +148,18 @@ export class ReviewService {
       data: updateReviewDto
     });
     if(!updatedReview) throw new BadRequestException('No se pudo actualizar la reseña');
+    // Se le notifica a los administradores que se actualizo una reseña
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+          userId: admin.id,
+          title: 'Reseña actualizada',
+          message: `El usuario ${existingReview.userId} ha actualizado su reseña para el libro ${existingReview.bookId}`,
+          typeNotification: 'Informativa'
+      })
+    }
     return updatedReview;
   }
 
@@ -147,6 +175,18 @@ export class ReviewService {
       }
     });
     if(!updatedReview) throw new BadRequestException('No se pudo actualizar la reseña');
+    // Se le notifica a los administradores que se actualizo su estado
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for(const admin of admins){
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Estado de reseña actualizado',
+        message: `El usuario ${existingReview.userId} ha actualizado el estado de su reseña para el libro ${existingReview.bookId}`,
+        typeNotification: 'Informativa'
+      })
+    }
     return updatedReview;
   }
 

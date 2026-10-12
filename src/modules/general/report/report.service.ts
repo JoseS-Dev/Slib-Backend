@@ -219,7 +219,7 @@ export class ReportService {
       await this.notificationService.create({
         userId: admin.id,
         title: 'Reporte eliminado',
-        message: `Se ha eliminado el reporte con ID: ${existingReport.id}`,
+        message: `Se ha eliminado el reporte`,
         typeNotification: 'Informativa'
       });
     }

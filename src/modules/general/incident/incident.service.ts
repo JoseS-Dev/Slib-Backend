@@ -236,6 +236,20 @@ export class IncidentService {
     // Se elimina el incidente
     const deletedIncident = await this.prisma.extended.incident.softDelete(id);
     if(!deletedIncident) throw new BadRequestException('No se pudo eliminar el incidente');
+    // Se le notifica a los adminsitradores y recepcionista sobre la eliminación del incidente
+    const users = await this.prisma.extended.user.findMany({
+      where: {
+        role: {name: {in: ['Administrador', 'Recepcionista']}}
+      }
+    });
+    for(const user of users){
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Incidente Eliminado',
+        message: `Se ha eliminado el incidente`,
+        typeNotification: 'Informativa'
+      })
+    }
     return {message: 'Incidente eliminado correctamente'};
   }
 }
