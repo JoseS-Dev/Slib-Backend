@@ -45,7 +45,7 @@ export class SubcategoryService {
         userId: user.id,
         title: 'Subcategoria creada',
         message: `Se ha creado la subcategoria: ${subcategory.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return subcategory;
@@ -54,7 +54,13 @@ export class SubcategoryService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Subcategory[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Subcategory[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [subcategories, total] = await Promise.all([
       this.prisma.extended.subcategory.findMany({
         skip: (page - 1) * limit,
@@ -67,13 +73,19 @@ export class SubcategoryService {
       this.prisma.extended.subcategory.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: subcategories, total, totalPages };
+    return { data: subcategories, total, page, limit, totalPages };
   }
 
   async findAllActive(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Subcategory[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Subcategory[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [subcategories, total] = await Promise.all([
       this.prisma.extended.subcategory.findMany({
         where: { isActive: true },
@@ -89,14 +101,20 @@ export class SubcategoryService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: subcategories, total, totalPages };
+    return { data: subcategories, total, page, limit, totalPages };
   }
 
   async findAllByCategoryId(
     categoryId: number,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Subcategory[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Subcategory[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     // Se verifica que la categoria exista
     const category = await this.prisma.extended.category.findUnique({
       where: { id: categoryId },
@@ -117,7 +135,7 @@ export class SubcategoryService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: subcategories, total, totalPages };
+    return { data: subcategories, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Subcategory> {
@@ -169,7 +187,7 @@ export class SubcategoryService {
         userId: user.id,
         title: 'Subcategoria actualizada',
         message: `Se ha actualizado la subcategoria: ${updatedSubcategory.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return updatedSubcategory;
@@ -195,7 +213,7 @@ export class SubcategoryService {
         userId: user.id,
         title: 'Subcategoria eliminada',
         message: `Se ha eliminado la subcategoria: ${subcategory.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return { message: 'Subcategoria eliminada correctamente' };

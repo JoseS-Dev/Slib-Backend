@@ -69,7 +69,13 @@ export class CategoryService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Category[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Category[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [categories, total] = await Promise.all([
       this.prisma.extended.category.findMany({
         skip: (page - 1) * limit,
@@ -85,13 +91,19 @@ export class CategoryService {
       this.prisma.extended.category.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: categories, total, totalPages };
+    return { data: categories, total, page, limit, totalPages };
   }
 
   async findAllActive(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Category[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Category[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [categories, total] = await Promise.all([
       this.prisma.extended.category.findMany({
         where: { isActive: true },
@@ -110,7 +122,7 @@ export class CategoryService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: categories, total, totalPages };
+    return { data: categories, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Category> {
