@@ -12,47 +12,47 @@ interface ReportTemplate {
 // Plantillas alineadas con el enum `ReportType` del schema.
 const TEMPLATES: ReadonlyArray<ReportTemplate> = [
   {
-    type: ReportType.PRESTAMOS_ACTIVOS,
+    type: ReportType.Prestamo,
     name: 'Préstamos activos',
     description: 'Listado de libros actualmente en poder de los usuarios.',
   },
   {
-    type: ReportType.PRESTAMOS_VENCIDOS,
+    type: ReportType.Prestamo,
     name: 'Préstamos vencidos',
     description: 'Usuarios morosos con fecha límite excedida.',
   },
   {
-    type: ReportType.HISTORIAL_PRESTAMOS,
+    type: ReportType.Prestamo,
     name: 'Historial de préstamos',
     description: 'Histórico general de préstamos en un rango de fechas.',
   },
   {
-    type: ReportType.INVENTARIO_GENERAL,
+    type: ReportType.Libro,
     name: 'Inventario general',
     description: 'Estado actual de todos los libros y ejemplares físicos.',
   },
   {
-    type: ReportType.LIBROS_MAS_SOLICITADOS,
+    type: ReportType.Libro,
     name: 'Libros más solicitados',
     description: 'Ranking de los libros con mayor demanda.',
   },
   {
-    type: ReportType.EJEMPLARES_BAJA,
+    type: ReportType.Libro,
     name: 'Ejemplares de baja',
     description: 'Libros perdidos, dañados o dados de baja definitiva.',
   },
   {
-    type: ReportType.MULTAS_PENDIENTES,
+    type: ReportType.Usuario,
     name: 'Multas pendientes',
     description: 'Dinero total acumulado en multas por cobrar.',
   },
   {
-    type: ReportType.MULTAS_RECAUDADAS,
+    type: ReportType.Usuario,
     name: 'Multas recaudadas',
     description: 'Ingresos generados por multas pagadas en un período.',
   },
   {
-    type: ReportType.USUARIOS_ACTIVOS,
+    type: ReportType.Usuario,
     name: 'Usuarios activos',
     description: 'Estadísticas de usuarios con mayor actividad.',
   },
