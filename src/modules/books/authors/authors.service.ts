@@ -7,10 +7,14 @@ import { Author } from './entities/author.entity.js';
 import { CreateAuthorDto } from './dto/create-author.dto.js';
 import { UpdateAuthorDto } from './dto/update-author.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class AuthorsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async create(createAuthorDto: CreateAuthorDto): Promise<Author> {
     return this.prisma.$transaction(async (tx) => {
@@ -46,6 +50,18 @@ export class AuthorsService {
           },
         },
       });
+      // Se notifica a los administradores del sistema sobre un nuevo regitro de autor aun libro
+      const admins = await tx.user.findMany({
+        where: { role: { name: 'Administrador' } },
+      });
+      for (const admin of admins) {
+        await this.notificationService.create({
+          userId: admin.id,
+          title: 'Nuevo autor registrado',
+          message: `Se ha registrado un nuevo autor con ID: ${newAuthor.id}`,
+          typeNotification: 'Informativa',
+        });
+      }
       return res!;
     });
   }
@@ -146,6 +162,18 @@ export class AuthorsService {
         },
         omit: { deletedAt: true },
       });
+      // Se notifica a los administradores del sistema sobre la actualización de un autor
+      const admins = await tx.user.findMany({
+        where: { role: { name: 'Administrador' } },
+      });
+      for (const admin of admins) {
+        await this.notificationService.create({
+          userId: admin.id,
+          title: 'Autor actualizado',
+          message: `Se ha actualizado el autor con ID: ${updatedAuthor.id}`,
+          typeNotification: 'Informativa',
+        });
+      }
       return res!;
     });
     if (!updatedAuthor)
@@ -171,6 +199,18 @@ export class AuthorsService {
     );
     if (!deletedAuthor)
       throw new BadRequestException('No se pudo eliminar el autor');
+    // Se le notifica a los administradores del sistema sobre la eliminación de un autor
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Autor eliminado',
+        message: `Se ha eliminado el autor con ID: ${deletedAuthor.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Autor eliminado correctamente' };
   }
 }

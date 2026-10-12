@@ -6,10 +6,14 @@ import {
 import { BookAuthor } from './entities/book-author.entity.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CreateBookAuthorDto } from './dto/create-book-author.dto.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class BookAuthorService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+  ) {}
 
   async create(createBookAuthorDto: CreateBookAuthorDto): Promise<BookAuthor> {
     // Se verifiica que exista el autor y el libro antes de crear la relación
@@ -30,9 +34,26 @@ export class BookAuthorService {
         'No se encontró el autor con el ID proporcionado',
       );
     // Si existe, se crea la relación
-    return this.prisma.bookAuthor.create({
+    const newBookAuthor = await this.prisma.bookAuthor.create({
       data: createBookAuthorDto,
     });
+    if (!newBookAuthor)
+      throw new BadRequestException(
+        'No se pudo crear la relación entre el libro y el autor',
+      );
+    // Se notifica a loa administradores del sistema sobre la creación de la relación entre el libro y el autor
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Relación libro-autor creada',
+        message: `Se ha creado una nueva relación entre el libro con ID: ${existingBook.id} y el autor con ID: ${existingAuthor.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
+    return newBookAuthor;
   }
 
   async findAllByBook(
@@ -128,6 +149,18 @@ export class BookAuthorService {
       throw new BadRequestException(
         'No se pudo eliminar la relación entre el libro y el autor',
       );
+    // Se notifica a los administradores del sistema sobre la eliminación de la relación entre el libro y el autor
+    const admins = await this.prisma.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Relación libro-autor eliminada',
+        message: `Se ha eliminado la relación entre el libro con ID: ${bookId} y el autor con ID: ${authorId}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Relación entre libro y autor eliminada correctamente' };
   }
 }

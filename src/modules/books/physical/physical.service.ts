@@ -10,10 +10,14 @@ import { UpdatePhysicalDto } from './dto/update-physical.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { PhysicalCopyStatus } from '../../../../generated/prisma/enums.js';
 import { RecordPhysicalCopyStatus } from '../../../utils/constants/constant.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class PhysicalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createPhysicalDto: CreatePhysicalDto): Promise<Physical> {
     // Se verifica que no exista una copia con el mismo número de copia para el mismo libro
@@ -24,9 +28,24 @@ export class PhysicalService {
       throw new ConflictException(
         'Ya existe una copia con el mismo número de copia para el mismo libro',
       );
-    return this.prisma.physicalCopy.create({
+    const newPhysicalCopy = await this.prisma.physicalCopy.create({
       data: createPhysicalDto,
     });
+    if (!newPhysicalCopy)
+      throw new BadRequestException('No se pudo crear la copia física');
+    // Se notifica a los usuarios que el libro ha sido recibido y está disponible para préstamo
+    const users = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Usuario' } },
+    });
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Nuevo ejemplar disponible',
+        message: `Se ha recibido un nuevo ejemplar del libro con ID: ${newPhysicalCopy.bookId} y número de copia: ${newPhysicalCopy.copyNumber}. Ahora está disponible para préstamo.`,
+        typeNotification: 'Informativa',
+      });
+    }
+    return newPhysicalCopy;
   }
 
   async findAll(
@@ -88,10 +107,25 @@ export class PhysicalService {
           'Ya existe una copia con el mismo número de copia para el mismo libro',
         );
     }
-    return this.prisma.physicalCopy.update({
+    const updatedPhysicalCopy = await this.prisma.physicalCopy.update({
       where: { id },
       data: updatePhysicalDto,
     });
+    if (!updatedPhysicalCopy)
+      throw new BadRequestException('No se pudo actualizar la copia física');
+    // Se notifica a los adminsitradores y recepcionista del sistema de la actualización de la copia física
+    const users = await this.prisma.extended.user.findMany({
+      where: { role: { name: { in: ['Administrador', 'Recepcionista'] } } },
+    });
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Copia física actualizada',
+        message: `Se ha actualizado la copia física con ID: ${updatedPhysicalCopy.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
+    return updatedPhysicalCopy;
   }
 
   async changeStatus(
@@ -115,10 +149,25 @@ export class PhysicalService {
       throw new BadRequestException(
         `No se puede cambiar el estado de ${currentStatus} a ${newStatus}`,
       );
-    return this.prisma.physicalCopy.update({
+    const updatedPhysicalCopy = await this.prisma.physicalCopy.update({
       where: { id },
       data: { status: newStatus },
     });
+    if(!updatedPhysicalCopy)
+      throw new BadRequestException('No se pudo actualizar la copia física');
+    // Se notifica a los administradores y recepcionista del sistema de la actualización del estado de la copia física
+    const users = await this.prisma.extended.user.findMany({
+      where: { role: { name: { in: ['Administrador', 'Recepcionista'] } } },
+    });
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Estado de copia física actualizado',
+        message: `Se ha actualizado el estado de la copia física con ID: ${updatedPhysicalCopy.id} a ${newStatus}`,
+        typeNotification: 'Informativa',
+      });
+    }
+    return updatedPhysicalCopy;
   }
 
   async remove(id: number): Promise<{ message: string }> {
@@ -129,19 +178,31 @@ export class PhysicalService {
         'No se encontró la copia física con el ID proporcionado',
       );
     const deletedPhysicalCopy = await this.prisma.extended.$transaction(
-      async (prisma) => {
+      async (tx) => {
         // se elimina el libro
-        const deletedBook = await this.prisma.extended.book.softDelete(
+        const deletedBook = await tx.book.softDelete(
           existingPhysicalCopy.bookId,
         );
         // se elimina la copia física
         const deletedPhysicalCopy =
-          await this.prisma.extended.physicalCopy.softDelete(id);
+          await tx.physicalCopy.softDelete(id);
         return deletedPhysicalCopy;
       },
     );
     if (!deletedPhysicalCopy)
       throw new BadRequestException('No se pudo eliminar la copia física');
+    // Se notifica a los administradores y recepcionista del sistema de la eliminación de la copia física
+    const users = await this.prisma.extended.user.findMany({
+      where: { role: { name: { in: ['Administrador', 'Recepcionista'] } } },
+    });
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Copia física eliminada',
+        message: `Se ha eliminado la copia física con ID: ${deletedPhysicalCopy.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Copia física eliminada correctamente' };
   }
 }

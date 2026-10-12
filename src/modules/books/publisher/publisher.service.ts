@@ -8,10 +8,14 @@ import { Publisher } from './entities/publisher.entity.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CreatePublisherDto } from './dto/create-publisher.dto.js';
 import { UpdatePublisherDto } from './dto/update-publisher.dto.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 
 @Injectable()
 export class PublisherService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createPublisherDto: CreatePublisherDto): Promise<Publisher> {
     // Se verifica que no exista un publisher con el mismo nombre
@@ -20,9 +24,25 @@ export class PublisherService {
     });
     if (existingPublisher)
       throw new ConflictException('Ya existe un publisher con el mismo nombre');
-    return this.prisma.publisher.create({
+    const createdPublisher = await this.prisma.publisher.create({
       data: createPublisherDto,
     });
+    if(!createdPublisher)
+      throw new BadRequestException('No se pudo crear el publisher');
+    // Se notifica a los administradores del sistema sobre la creación del nuevo publisher
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Publisher creado',
+        message: `Se ha creado un nuevo publisher con ID: ${createdPublisher.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
+
+    return createdPublisher;
   }
 
   async findAll(
@@ -82,10 +102,25 @@ export class PublisherService {
           'Ya existe un publisher con el mismo nombre',
         );
     }
-    return this.prisma.publisher.update({
+    const updatedPublisher = await this.prisma.publisher.update({
       where: { id },
       data: updatePublisherDto,
     });
+    if(!updatedPublisher)
+      throw new BadRequestException('No se pudo actualizar el publisher');
+    // Se notifica a los administradores del sistema sobre la actualización del publisher
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Publisher actualizado',
+        message: `Se ha actualizado el publisher con ID: ${updatedPublisher.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
+    return updatedPublisher;
   }
 
   async remove(id: number): Promise<{ message: string }> {
@@ -108,6 +143,18 @@ export class PublisherService {
       await this.prisma.extended.publisher.softDelete(id);
     if (!deletedPublisher)
       throw new BadRequestException('No se pudo eliminar el publisher');
+    // Se notifica a los administradores del sistema sobre la eliminación del publisher
+    const admins = await this.prisma.extended.user.findMany({
+      where: { role: { name: 'Administrador' } },
+    });
+    for (const admin of admins) {
+      await this.notificationService.create({
+        userId: admin.id,
+        title: 'Publisher eliminado',
+        message: `Se ha eliminado el publisher con ID: ${deletedPublisher.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Publisher eliminado correctamente' };
   }
 }

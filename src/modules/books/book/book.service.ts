@@ -8,9 +8,13 @@ import { CreateBookDto } from './dto/create-book.dto.js';
 import { UpdateBookDto } from './dto/update-book.dto.js';
 import { PrismaService } from '../../../prisma/prisma.service.js';
 import { deleteStoredFile } from '../../../utils/functions/function.js';
+import { NotificationService } from '../../general/notification/notification.service.js';
 @Injectable()
 export class BookService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
     const validations: Promise<any>[] = [];
@@ -65,6 +69,16 @@ export class BookService {
       data: createBookDto,
     });
     if (!book) throw new BadRequestException('No se pudo crear el libro');
+    // Se notifica a todos los usuarios del nuevo libro disponible
+    const users = await this.prisma.extended.user.findMany();
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Nuevo libro disponible',
+        message: `Se ha agregado un nuevo libro a la biblioteca: ${book.title}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return book;
   }
 
@@ -266,6 +280,18 @@ export class BookService {
       data: updateBookDto,
     });
     if (!book) throw new BadRequestException('No se pudo actualizar el libro');
+    // Se notifica alos administradores y recepcionista del sistema de la actualización del libro
+    const users = await this.prisma.extended.user.findMany({
+      where: { role: { name: { in: ['Administrador', 'Recepcionista'] } } },
+    });
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Libro actualizado',
+        message: `Se ha actualizado el libro con ID: ${book.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return book;
   }
 
@@ -281,6 +307,18 @@ export class BookService {
     // Se elimina el libro
     const book = await this.prisma.extended.book.softDelete(id);
     if (!book) throw new BadRequestException('No se pudo eliminar el libro');
+    // Se notifica a los administradores y recepcionista del sistema de la eliminación del libro
+    const users = await this.prisma.extended.user.findMany({
+      where: { role: { name: { in: ['Administrador', 'Recepcionista'] } } },
+    });
+    for (const user of users) {
+      await this.notificationService.create({
+        userId: user.id,
+        title: 'Libro eliminado',
+        message: `Se ha eliminado el libro con ID: ${book.id}`,
+        typeNotification: 'Informativa',
+      });
+    }
     return { message: 'Libro eliminado correctamente' };
   }
 }
