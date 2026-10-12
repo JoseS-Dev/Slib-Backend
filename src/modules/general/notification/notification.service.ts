@@ -49,7 +49,13 @@ export class NotificationService {
     page: number = 1,
     limit: number = 10,
     type?: NotificationType,
-  ): Promise<{ data: Notification[]; total: number, totalPages: number }> {
+  ): Promise<{
+    data: Notification[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     // Se verifica que exista el usuario antes de buscar las notificaciones
     const existingUser = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -70,7 +76,7 @@ export class NotificationService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: notifications, total, totalPages };
+    return { data: notifications, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Notification> {
@@ -134,10 +140,9 @@ export class NotificationService {
       throw new NotFoundException(
         'No se encontró la notificación para eliminar',
       );
-    const deletedNotification =
-      await this.prisma.notification.delete({
-        where: { id },
-      });
+    const deletedNotification = await this.prisma.notification.delete({
+      where: { id },
+    });
     if (!deletedNotification)
       throw new BadRequestException('No se pudo eliminar la notificación');
     return deletedNotification;
