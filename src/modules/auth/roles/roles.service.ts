@@ -69,7 +69,7 @@ export class RolesService {
         userId: admin.id,
         title: 'Nuevo rol creado',
         message: `Se ha creado un nuevo rol: ${role.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return role;
@@ -78,7 +78,13 @@ export class RolesService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Role[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Role[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [roles, total] = await Promise.all([
       this.prisma.extended.role.findMany({
         skip: (page - 1) * limit,
@@ -102,7 +108,7 @@ export class RolesService {
       this.prisma.extended.role.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: roles, total, totalPages };
+    return { data: roles, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Role> {
@@ -190,7 +196,7 @@ export class RolesService {
         userId: admin.id,
         title: 'Rol actualizado',
         message: `Se ha actualizado el rol: ${role.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return role;
@@ -221,7 +227,7 @@ export class RolesService {
         userId: admin.id,
         title: 'Rol eliminado',
         message: `Se ha eliminado el rol: ${existingRole.name}`,
-        typeNotification: 'Informativa'
+        typeNotification: 'Informativa',
       });
     }
     return { message: 'Rol eliminado correctamente' };

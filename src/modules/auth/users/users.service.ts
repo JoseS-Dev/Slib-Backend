@@ -48,6 +48,16 @@ export class UsersService {
         password: hashedPassword,
         roleId: role.id,
       },
+      omit: {
+        password: true,
+        lockedUntil: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+        passwordToken: true,
+        passwordTokenExpiry: true,
+      },
     });
     if (!newUser) throw new BadRequestException('No se pudo crear el usuario');
     // Se envía un correo de bienvenida al usuario
@@ -85,6 +95,16 @@ export class UsersService {
         ...createAdminUserDto,
         password: hashedPassword,
       },
+      omit: {
+        password: true,
+        lockedUntil: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+        passwordToken: true,
+        passwordTokenExpiry: true,
+      },
     });
     if (!newUser) throw new BadRequestException('No se pudo crear el usuario');
     // Se envia el correo de bienvenida al usuario con el correo del establecimiento de la contraseña
@@ -98,15 +118,21 @@ export class UsersService {
         email: newUser.email,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
-      })
-    ])
+      }),
+    ]);
     return newUser;
   }
 
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: User[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: User[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [users, total] = await Promise.all([
       this.prisma.extended.user.findMany({
         skip: (page - 1) * limit,
@@ -127,13 +153,19 @@ export class UsersService {
       this.prisma.extended.user.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: users, total, totalPages };
+    return { data: users, total, page, limit, totalPages };
   }
 
   async findAllByActive(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: User[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: User[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [users, total] = await Promise.all([
       this.prisma.extended.user.findMany({
         where: {
@@ -161,7 +193,7 @@ export class UsersService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: users, total, totalPages };
+    return { data: users, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<User> {
@@ -211,6 +243,16 @@ export class UsersService {
         ...updateUserDto,
         updatedAt: new Date(),
       },
+      omit: {
+        password: true,
+        lockedUntil: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+        passwordToken: true,
+        passwordTokenExpiry: true,
+      },
     });
     if (!updatedUser)
       throw new BadRequestException('No se pudo actualizar el usuario');
@@ -228,6 +270,16 @@ export class UsersService {
         isActive,
         updatedAt: new Date(),
       },
+      omit: {
+        password: true,
+        lockedUntil: true,
+        verificationToken: true,
+        verificationTokenExpiry: true,
+        resetToken: true,
+        resetTokenExpiry: true,
+        passwordToken: true,
+        passwordTokenExpiry: true,
+      },
     });
     if (!updatedUser)
       throw new BadRequestException(
@@ -244,8 +296,8 @@ export class UsersService {
         message: `El usuario ${existingUser.firstName} ${existingUser.lastName} ha sido ${
           isActive ? 'activado' : 'desactivado'
         }`,
-        typeNotification: 'Informativa'
-      })
+        typeNotification: 'Informativa',
+      });
     }
     return updatedUser;
   }
@@ -267,8 +319,8 @@ export class UsersService {
         userId: admin.id,
         title: `Usuario eliminado`,
         message: `El usuario ${existingUser.firstName} ${existingUser.lastName} ha sido eliminado`,
-        typeNotification: 'Advertencia'
-      })
+        typeNotification: 'Advertencia',
+      });
     }
     return { message: 'Usuario eliminado correctamente' };
   }

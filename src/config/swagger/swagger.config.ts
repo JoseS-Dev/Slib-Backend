@@ -28,4 +28,6 @@ export const swaggerConfig = new DocumentBuilder()
   .addTag('Autenticación - Roles', 'Gestión de roles del sistema')
   .addTag('Autenticación - Usuarios', 'Gestión de usuarios')
   .addTag('Autenticación - Sesiones', 'Inicio, refresh y cierre de sesión')
+  .addTag('Categorías', 'Gestión de categorías')
+  .addTag('Subcategorías', 'Gestión de subcategorías')
   .build();
