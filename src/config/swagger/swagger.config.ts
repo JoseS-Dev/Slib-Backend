@@ -36,4 +36,17 @@ export const swaggerConfig = new DocumentBuilder()
   .addTag('General - Reportes', 'Gestión de reportes administrativos')
   .addTag('General - Reseñas', 'Reseñas de libros por usuarios')
   .addTag('General - Suspensiones', 'Suspensiones de usuarios')
+  .addTag(
+    'Servicio de Correo',
+    'Envío de correos transaccionales (bienvenida, recuperación y establecimiento de contraseña)',
+  )
+  .addTag('Solicitudes', 'Gestión de solicitudes de libros')
+  .addTag('Préstamos', 'Gestión de préstamos de ejemplares')
+  .addTag('Multas', 'Gestión de multas asociadas a préstamos')
+  .addTag('Items de Solicitud', 'Items (ejemplares) asociados a una solicitud')
+  .addTag('Libros - Autores', 'Gestión de autores de libros')
+  .addTag('Libros - Editoriales', 'Gestión de editoriales')
+  .addTag('Libros - Ejemplares Físicos', 'Gestión de copias físicas de los libros')
+  .addTag('Libros', 'Gestión de libros del catálogo')
+  .addTag('Libros - Relación Libro-Autor', 'Asociación entre libros y autores')
   .build();
