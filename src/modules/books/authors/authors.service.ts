@@ -50,6 +50,11 @@ export class AuthorsService {
           },
         },
       });
+      // Aplanando la estructura de los libros asociados al autor
+      const resWithBooks = {
+        ...res!,
+        books: res!.books?.map((bookAuthor) => bookAuthor.book) || [],
+      };
       // Se notifica a los administradores del sistema sobre un nuevo regitro de autor aun libro
       const admins = await tx.user.findMany({
         where: { role: { name: 'Administrador' } },
@@ -62,7 +67,7 @@ export class AuthorsService {
           typeNotification: 'Informativa',
         });
       }
-      return res!;
+      return resWithBooks;
     });
   }
 
@@ -98,8 +103,13 @@ export class AuthorsService {
       }),
       this.prisma.extended.author.count(),
     ]);
+    // Aplanando la estructura de los libros asociados a cada autor
+    const authorsWithBooks = authors.map((author) => ({
+      ...author,
+      books: author.books?.map((bookAuthor) => bookAuthor.book) || [],
+    }));
     const totalPages = Math.ceil(total / limit);
-    return { data: authors, total, page, limit, totalPages };
+    return { data: authorsWithBooks, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Author> {
@@ -121,7 +131,11 @@ export class AuthorsService {
       omit: { deletedAt: true },
     });
     if (!author) throw new NotFoundException('No se encontró el autor');
-    return author;
+    // Aplanando la estructura de los libros asociados al autor
+    return {
+      ...author,
+      books: author.books?.map((bookAuthor) => bookAuthor.book) || [],
+    };
   }
 
   async update(id: number, updateAuthorDto: UpdateAuthorDto): Promise<Author> {
@@ -168,6 +182,11 @@ export class AuthorsService {
         },
         omit: { deletedAt: true },
       });
+      // Aplanando la estructura de los libros asociados al autor
+      const resWithBooks = {
+        ...res!,
+        books: res!.books?.map((bookAuthor) => bookAuthor.book) || [],
+      };
       // Se notifica a los administradores del sistema sobre la actualización de un autor
       const admins = await tx.user.findMany({
         where: { role: { name: 'Administrador' } },
@@ -180,7 +199,7 @@ export class AuthorsService {
           typeNotification: 'Informativa',
         });
       }
-      return res!;
+      return resWithBooks;
     });
     if (!updatedAuthor)
       throw new BadRequestException('No se pudo actualizar el autor');

@@ -62,7 +62,6 @@ export class SuspensionResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario suspendido (opcional)',
     required: false,
     nullable: true,
@@ -70,7 +69,6 @@ export class SuspensionResponse {
   user?: User;
 
   @ApiProperty({
-    type: () => Fine,
     description: 'Datos de la multa relacionada (opcional)',
     required: false,
     nullable: true,
@@ -80,7 +78,6 @@ export class SuspensionResponse {
 
 export class PaginatedSuspensionsResponse {
   @ApiProperty({
-    type: [SuspensionResponse],
     description: 'Listado de suspensiones de la página actual',
   })
   data!: SuspensionResponse[];

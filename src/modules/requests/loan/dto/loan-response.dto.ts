@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Loan } from '../entities/loan.entity.js';
+import { Item } from '../../items/entities/item.entity.js';
+import { Physical } from '../../../books/physical/entities/physical.entity.js';
 
 export class LoanResponse {
   @ApiProperty({ example: 1, description: 'Identificador único del préstamo' })
@@ -64,18 +66,22 @@ export class LoanResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Loan,
     description:
       'Datos del item de solicitud y del ejemplar físico (opcional, presente en includes)',
     required: false,
   })
-  item?: Loan;
-  physicalCopy?: Loan;
+  item?: Item | null;
+
+  @ApiProperty({
+    description:
+      'Datos del ejemplar físico y del item de solicitud (opcional, presente en includes)',
+      required: false,
+  })
+  physicalCopy?: Physical | null;
 }
 
 export class PaginatedLoansResponse {
   @ApiProperty({
-    type: [LoanResponse],
     description: 'Listado de préstamos de la página actual',
   })
   data!: LoanResponse[];

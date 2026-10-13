@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Fine } from '../entities/fine.entity.js';
+import { Loan } from '../../loan/entities/loan.entity.js';
 
 export class FineResponse {
   @ApiProperty({ example: 1, description: 'Identificador único de la multa' })
@@ -50,16 +50,14 @@ export class FineResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Fine,
     description: 'Datos del préstamo asociado (opcional, presente en includes)',
     required: false,
   })
-  loan?: Fine;
+  loan?: Loan | null;
 }
 
 export class PaginatedFinesResponse {
   @ApiProperty({
-    type: [FineResponse],
     description: 'Listado de multas de la página actual',
   })
   data!: FineResponse[];

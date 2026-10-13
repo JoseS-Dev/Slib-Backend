@@ -52,7 +52,6 @@ export class ReviewResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario que escribió la reseña (opcional)',
     required: false,
     nullable: true,
@@ -60,7 +59,6 @@ export class ReviewResponse {
   user?: User;
 
   @ApiProperty({
-    type: () => Book,
     description: 'Datos del libro reseñado (opcional)',
     required: false,
     nullable: true,
@@ -70,7 +68,6 @@ export class ReviewResponse {
 
 export class PaginatedReviewsResponse {
   @ApiProperty({
-    type: [ReviewResponse],
     description: 'Listado de reseñas de la página actual',
   })
   data!: ReviewResponse[];

@@ -31,7 +31,6 @@ export class Category {
   isActive!: boolean;
 
   @ApiProperty({
-    type: () => [Subcategory],
     description: 'Subcategorías asociadas a la categoría',
     required: false,
   })

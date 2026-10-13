@@ -92,7 +92,6 @@ export class Incident {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => User,
     description:
       'Datos del usuario que reportó (opcional, presente en includes)',
     required: false,
@@ -101,7 +100,6 @@ export class Incident {
   user?: User;
 
   @ApiProperty({
-    type: () => Physical,
     description:
       'Datos del ejemplar físico relacionado (opcional, presente en includes)',
     required: false,
@@ -110,7 +108,6 @@ export class Incident {
   physical?: Physical | null;
 
   @ApiProperty({
-    type: () => Loan,
     description:
       'Datos del préstamo relacionado (opcional, presente en includes)',
     required: false,

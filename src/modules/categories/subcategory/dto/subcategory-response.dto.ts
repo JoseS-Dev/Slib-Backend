@@ -48,7 +48,6 @@ export class SubcategoryResponse {
 
 export class PaginatedSubcategoriesResponse {
   @ApiProperty({
-    type: [SubcategoryResponse],
     description: 'Listado de subcategorías de la página actual',
   })
   data!: SubcategoryResponse[];

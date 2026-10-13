@@ -23,7 +23,6 @@ export class UpdateRoleDto extends createZodDto(updateRoleDto) {
     example: [1, 2, 3],
     description:
       'Identificadores de los permisos. Si se envía, reemplaza la lista completa de permisos del rol',
-    type: [Number],
     required: false,
   })
   declare permissionsIds?: number[];

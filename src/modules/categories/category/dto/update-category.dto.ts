@@ -23,7 +23,6 @@ export class UpdateCategoryDto extends createZodDto(UpdateCategorySchema) {
   declare description?: string;
 
   @ApiProperty({
-    type: [CreateSubcategoryInlineDto],
     description:
       'Subcategorías adicionales a crear. Si se envía, se agregan a las subcategorías existentes',
     required: false,

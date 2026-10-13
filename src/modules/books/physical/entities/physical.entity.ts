@@ -54,7 +54,6 @@ export class Physical {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => Book,
     description: 'Datos del libro asociado (opcional, presente en includes)',
     required: false,
     nullable: true,

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LoanStatus } from '../../../../../generated/prisma/enums.js';
-import { RequestItem } from '../../items/entities/item.entity.js';
+import { Item } from '../../items/entities/item.entity.js';
 import { Physical } from '../../../books/physical/entities/physical.entity.js';
 
 export class Loan {
@@ -75,15 +75,13 @@ export class Loan {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => RequestItem,
     description: 'Datos del item de solicitud (opcional, presente en includes)',
     required: false,
     nullable: true,
   })
-  item?: RequestItem | null;
+  item?: Item | null;
 
   @ApiProperty({
-    type: () => Physical,
     description: 'Datos del ejemplar físico prestado (opcional)',
     required: false,
     nullable: true,

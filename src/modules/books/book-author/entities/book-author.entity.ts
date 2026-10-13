@@ -16,18 +16,16 @@ export class BookAuthor {
   authorId!: number;
 
   @ApiProperty({
-    type: () => Book,
     description: 'Datos del libro asociado (opcional, presente en includes)',
     required: false,
     nullable: true,
   })
-  book?: Book | null;
+  book?: Book;
 
   @ApiProperty({
-    type: () => Author,
     description: 'Datos del autor asociado (opcional, presente en includes)',
     required: false,
     nullable: true,
   })
-  author?: Author | null;
+  author?: Author;
 }

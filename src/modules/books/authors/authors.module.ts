@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AuthorsService } from './authors.service.js';
 import { AuthorsController } from './authors.controller.js';
+import { NotificationModule } from '../../general/notification/notification.module.js';
 
 @Module({
+  imports: [NotificationModule],
   controllers: [AuthorsController],
   providers: [AuthorsService],
 })

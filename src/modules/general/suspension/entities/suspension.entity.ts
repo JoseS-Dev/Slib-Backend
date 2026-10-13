@@ -75,7 +75,6 @@ export class Suspension {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario suspendido (opcional)',
     required: false,
     nullable: true,
@@ -83,7 +82,6 @@ export class Suspension {
   user?: User;
 
   @ApiProperty({
-    type: () => Fine,
     description: 'Datos de la multa relacionada (opcional)',
     required: false,
     nullable: true,

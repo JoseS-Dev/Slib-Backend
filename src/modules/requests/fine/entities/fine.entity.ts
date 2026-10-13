@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { FineStatus } from '../../../../../generated/prisma/enums.js';
-import { Decimal } from '../../../../../generated/prisma/internal/prismaNamespace.js';
 import { Loan } from '../../loan/entities/loan.entity.js';
 
 export class Fine {
@@ -23,7 +22,7 @@ export class Fine {
     example: '25.50',
     description: 'Monto de la multa',
   })
-  amount!: Decimal;
+  amount!: number;
 
   @ApiProperty({
     example: 'Retraso en la devolución del libro',
@@ -53,7 +52,6 @@ export class Fine {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Loan,
     description: 'Datos del préstamo asociado (opcional, presente en includes)',
     required: false,
     nullable: true,

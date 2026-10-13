@@ -32,7 +32,6 @@ export class CreateAuthorDto extends createZodDto(createAuthorSchema) {
     example: [1, 2, 3],
     description: 'Identificadores de los libros a asociar al autor',
     required: false,
-    type: [Number],
   })
   declare bookIds?: number[];
 }

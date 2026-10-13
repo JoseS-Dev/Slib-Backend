@@ -36,7 +36,6 @@ export class PermissionResponse {
 
 export class PaginatedPermissionsResponse {
   @ApiProperty({
-    type: [PermissionResponse],
     description: 'Listado de permisos de la página actual',
   })
   data!: PermissionResponse[];

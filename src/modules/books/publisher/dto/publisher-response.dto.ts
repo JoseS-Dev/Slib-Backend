@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Publisher } from '../entities/publisher.entity.js';
+import { Book } from '../../book/entities/book.entity.js';
 
 export class PublisherResponse {
   @ApiProperty({ example: 1, description: 'Identificador único de la editorial' })
@@ -32,16 +33,14 @@ export class PublisherResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Publisher,
     description: 'Libros publicados por la editorial (opcional)',
     required: false,
   })
-  books?: Publisher;
+  books?: Book[] | null;
 }
 
 export class PaginatedPublishersResponse {
   @ApiProperty({
-    type: [PublisherResponse],
     description: 'Listado de editoriales de la página actual',
   })
   data!: PublisherResponse[];

@@ -36,7 +36,6 @@ export class FavoriteResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Book,
     description: 'Datos del libro favorito (opcional, presente en includes)',
     required: false,
     nullable: true,
@@ -46,7 +45,6 @@ export class FavoriteResponse {
 
 export class PaginatedFavoritesResponse {
   @ApiProperty({
-    type: [FavoriteResponse],
     description: 'Listado de favoritos de la página actual',
   })
   data!: FavoriteResponse[];

@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Item } from '../entities/item.entity.js';
+import { Request } from '../../request/entities/request.entity.js';
+import { Physical } from '../../../books/physical/entities/physical.entity.js';
 
 export class ItemResponse {
   @ApiProperty({ example: 1, description: 'Identificador único del item' })
@@ -24,18 +26,22 @@ export class ItemResponse {
   status!: string;
 
   @ApiProperty({
-    type: () => Item,
     description:
       'Datos de la solicitud y del ejemplar físico (opcional, presente en includes)',
     required: false,
   })
-  request?: Item;
-  physical?: Item;
+  request?: Request | null;
+
+  @ApiProperty({
+    description:
+      'Datos del ejemplar físico y de la solicitud (opcional, presente en includes)',
+    required: false,
+  })
+  physical?: Physical | null;
 }
 
 export class PaginatedItemsResponse {
   @ApiProperty({
-    type: [ItemResponse],
     description: 'Listado de items de la página actual',
   })
   data!: ItemResponse[];

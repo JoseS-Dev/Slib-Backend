@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Request } from '../entities/request.entity.js';
+import { Item } from '../../items/entities/item.entity.js';
+import { User } from '../../../auth/users/entities/user.entity.js';
 
 export class RequestResponse {
   @ApiProperty({ example: 1, description: 'Identificador único de la solicitud' })
@@ -66,17 +68,20 @@ export class RequestResponse {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => Request,
     description: 'Datos del usuario y los items (opcional, presente en includes)',
     required: false,
   })
-  user?: Request;
-  items?: Request;
+  user?: User | null;
+
+  @ApiProperty({
+    description: 'Lista de items (ejemplares) asociados a la solicitud',
+    required: false,
+  })
+  items?: Item[] | null;
 }
 
 export class PaginatedRequestsResponse {
   @ApiProperty({
-    type: [RequestResponse],
     description: 'Listado de solicitudes de la página actual',
   })
   data!: RequestResponse[];

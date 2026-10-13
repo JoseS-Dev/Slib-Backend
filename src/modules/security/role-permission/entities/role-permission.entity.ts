@@ -16,7 +16,6 @@ export class RolePermission {
   permissionId!: number;
 
   @ApiProperty({
-    type: () => Role,
     description: 'Datos del rol asociado (opcional, presente en includes)',
     required: false,
     nullable: true,
@@ -24,7 +23,6 @@ export class RolePermission {
   role?: Role | null;
 
   @ApiProperty({
-    type: () => Permission,
     description: 'Datos del permiso asociado (opcional, presente en includes)',
     required: false,
     nullable: true,

@@ -40,7 +40,6 @@ export class Favorite {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => User,
     description:
       'Datos del usuario propietario (opcional, presente en includes)',
     required: false,
@@ -49,7 +48,6 @@ export class Favorite {
   user?: User;
 
   @ApiProperty({
-    type: () => Book,
     description: 'Datos del libro favorito (opcional, presente en includes)',
     required: false,
     nullable: true,

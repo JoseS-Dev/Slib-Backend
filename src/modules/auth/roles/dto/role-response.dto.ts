@@ -17,9 +17,8 @@ export class RoleResponse {
   isDefault?: boolean | null;
 
   @ApiProperty({
-    type: () => RolePermissionNested,
-    isArray: true,
-    description: 'Permisos asociados al rol',
+    description:
+      'Permisos asociados al rol (lista de objetos con roleId, permissionId y datos del permiso)',
     required: false,
   })
   permissions?: RolePermissionNested[];
@@ -39,7 +38,6 @@ export class RoleResponse {
 
 export class PaginatedRolesResponse {
   @ApiProperty({
-    type: [RoleResponse],
     description: 'Listado de roles de la página actual',
   })
   data!: RoleResponse[];

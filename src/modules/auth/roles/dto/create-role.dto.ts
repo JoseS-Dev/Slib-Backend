@@ -23,7 +23,6 @@ export class CreateRoleDto extends createZodDto(createRoleDto) {
     example: [1, 2, 5],
     description:
       'Identificadores de los permisos que se asociarán al rol al crearlo',
-    type: [Number],
     required: false,
   })
   declare permissionsIds?: number[];

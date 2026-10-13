@@ -223,7 +223,6 @@ export class NotificationController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Notificaciones marcadas como leídas',
-    type: [NotificationResponse],
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,

@@ -74,7 +74,6 @@ export class IncidentResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario que reportó el incidente',
     required: false,
     nullable: true,
@@ -82,7 +81,6 @@ export class IncidentResponse {
   user?: User;
 
   @ApiProperty({
-    type: () => Physical,
     description: 'Datos del ejemplar físico relacionado',
     required: false,
     nullable: true,
@@ -90,7 +88,6 @@ export class IncidentResponse {
   physical?: Physical | null;
 
   @ApiProperty({
-    type: () => Loan,
     description: 'Datos del préstamo relacionado',
     required: false,
     nullable: true,
@@ -100,7 +97,6 @@ export class IncidentResponse {
 
 export class PaginatedIncidentsResponse {
   @ApiProperty({
-    type: [IncidentResponse],
     description: 'Listado de incidentes de la página actual',
   })
   data!: IncidentResponse[];

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RequestStatus } from '../../../../../generated/prisma/enums.js';
 import { User } from '../../../auth/users/entities/user.entity.js';
-import { RequestItem } from '../../items/entities/item.entity.js';
+import { Item } from '../../items/entities/item.entity.js';
 
 export class Request {
   @ApiProperty({ example: 1, description: 'Identificador único de la solicitud' })
@@ -42,7 +42,7 @@ export class Request {
   reasonCancellation?: string | null;
 
   @ApiProperty({
-    example: RequestStatus.En_Revision,
+    example: RequestStatus.Pendiente,
     description: 'Estado actual de la solicitud',
     enum: RequestStatus,
   })
@@ -69,7 +69,6 @@ export class Request {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario que creó la solicitud (opcional)',
     required: false,
     nullable: true,
@@ -77,9 +76,8 @@ export class Request {
   user?: User;
 
   @ApiProperty({
-    type: () => [RequestItem],
     description: 'Lista de items (ejemplares) asociados a la solicitud',
     required: false,
   })
-  items?: RequestItem[];
+  items?: Item[] | null;
 }

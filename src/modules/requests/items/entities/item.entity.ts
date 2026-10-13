@@ -27,7 +27,6 @@ export class Item {
   status!: RequestItemStatus;
 
   @ApiProperty({
-    type: () => Request,
     description: 'Datos de la solicitud asociada (opcional, presente en includes)',
     required: false,
     nullable: true,
@@ -35,7 +34,6 @@ export class Item {
   request?: Request | null;
 
   @ApiProperty({
-    type: () => Physical,
     description: 'Datos del ejemplar físico asociado (opcional)',
     required: false,
     nullable: true,

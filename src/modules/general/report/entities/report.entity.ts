@@ -66,7 +66,6 @@ export class Report {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario que generó el reporte (opcional)',
     required: false,
     nullable: true,

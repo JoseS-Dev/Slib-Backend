@@ -35,7 +35,6 @@ export class UpdateAuthorDto extends createZodDto(updateAuthorSchema) {
     description:
       'Identificadores de los libros a asociar al autor (reemplaza la lista actual)',
     required: false,
-    type: [Number],
   })
   declare bookIds?: number[];
 }

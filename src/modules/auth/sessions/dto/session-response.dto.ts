@@ -135,7 +135,6 @@ export class VerifySessionResponse {
   isAuthenticated!: boolean;
 
   @ApiProperty({
-    type: () => VerifySessionUserPayload,
     description: 'Datos del usuario extraídos del token JWT',
   })
   user!: VerifySessionUserPayload;

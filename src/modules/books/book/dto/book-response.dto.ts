@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Book } from '../entities/book.entity.js';
+import { Publisher } from '../../publisher/entities/publisher.entity.js';
+import { Category } from '../../../categories/category/entities/category.entity.js';
+import { Subcategory } from '../../../categories/subcategory/entities/subcategory.entity.js';
 
 export class BookResponse {
   @ApiProperty({ example: 1, description: 'Identificador único del libro' })
@@ -76,19 +79,29 @@ export class BookResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Book,
     description:
       'Categoría, subcategoría y editorial del libro (opcional, presente en includes)',
     required: false,
   })
-  category?: Book;
-  subcategory?: Book;
-  publisher?: Book;
+  category?: Category | null;
+
+  @ApiProperty({
+    description:
+      'Categoría, subcategoría y editorial del libro (opcional, presente en includes)',
+    required: false,
+  })
+  subcategory?: Subcategory | null;
+
+  @ApiProperty({
+    description:
+      'Categoría, subcategoría y editorial del libro (opcional, presente en includes)',
+    required: false,
+  })
+  publisher?: Publisher | null;
 }
 
 export class PaginatedBooksResponse {
   @ApiProperty({
-    type: [BookResponse],
     description: 'Listado de libros de la página actual',
   })
   data!: BookResponse[];

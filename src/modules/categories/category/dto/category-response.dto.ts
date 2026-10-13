@@ -29,7 +29,6 @@ export class CategoryResponse {
   isActive!: boolean;
 
   @ApiProperty({
-    type: () => [Subcategory],
     description: 'Subcategorías asociadas a la categoría',
     required: false,
   })
@@ -50,7 +49,6 @@ export class CategoryResponse {
 
 export class PaginatedCategoriesResponse {
   @ApiProperty({
-    type: [CategoryResponse],
     description: 'Listado de categorías de la página actual',
   })
   data!: CategoryResponse[];

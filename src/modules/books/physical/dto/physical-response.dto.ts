@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Physical } from '../entities/physical.entity.js';
+import { Book } from '../../book/entities/book.entity.js';
 
 export class PhysicalResponse {
   @ApiProperty({ example: 1, description: 'Identificador único del ejemplar' })
@@ -44,16 +45,14 @@ export class PhysicalResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Physical,
     description: 'Datos del libro asociado (opcional, presente en includes)',
     required: false,
   })
-  book?: Physical;
+  book?: Book | null;
 }
 
 export class PaginatedPhysicalsResponse {
   @ApiProperty({
-    type: [PhysicalResponse],
     description: 'Listado de ejemplares físicos de la página actual',
   })
   data!: PhysicalResponse[];

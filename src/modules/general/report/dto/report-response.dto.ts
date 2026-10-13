@@ -50,7 +50,6 @@ export class ReportResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => User,
     description: 'Datos del usuario que generó el reporte (opcional)',
     required: false,
     nullable: true,
@@ -60,7 +59,6 @@ export class ReportResponse {
 
 export class PaginatedReportsResponse {
   @ApiProperty({
-    type: [ReportResponse],
     description: 'Listado de reportes de la página actual',
   })
   data!: ReportResponse[];

@@ -40,9 +40,8 @@ export class Publisher {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => [Book],
     description: 'Libros publicados por la editorial (opcional)',
     required: false,
   })
-  books?: Book[];
+  books?: Book[] | null;
 }

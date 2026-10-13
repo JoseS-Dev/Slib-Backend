@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Author } from '../entities/author.entity.js';
+import { Book } from '../../book/entities/book.entity.js';
 
 export class AuthorResponse {
   @ApiProperty({ example: 1, description: 'Identificador único del autor' })
@@ -33,16 +34,14 @@ export class AuthorResponse {
   updatedAt!: Date;
 
   @ApiProperty({
-    type: () => Author,
     description: 'Libros asociados al autor (opcional, presente en includes)',
     required: false,
   })
-  books?: Author;
+  books?: Book[] | null;
 }
 
 export class PaginatedAuthorsResponse {
   @ApiProperty({
-    type: [AuthorResponse],
     description: 'Listado de autores de la página actual',
   })
   data!: AuthorResponse[];

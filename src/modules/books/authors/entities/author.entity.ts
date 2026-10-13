@@ -41,9 +41,8 @@ export class Author {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => [Book],
     description: 'Libros asociados al autor (opcional, presente en includes)',
     required: false,
   })
-  books?: Book[];
+  books?: Book[] | null;
 }

@@ -9,7 +9,6 @@ export class RolePermissionNested {
   permissionId!: number;
 
   @ApiProperty({
-    type: () => Permission,
     description: 'Datos del permiso asociado',
     required: false,
     nullable: true,
@@ -33,7 +32,7 @@ export class Role {
   isDefault?: boolean | null;
 
   @ApiProperty({
-    type: [RolePermissionNested],
+
     description: 'Permisos asociados al rol',
     required: false,
   })

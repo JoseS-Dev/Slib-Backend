@@ -37,7 +37,6 @@ export class RolePermissionResponse {
   permissionId!: number;
 
   @ApiProperty({
-    type: () => RoleSummary,
     description: 'Información del rol asociado',
     required: false,
     nullable: true,
@@ -45,7 +44,6 @@ export class RolePermissionResponse {
   role?: RoleSummary | null;
 
   @ApiProperty({
-    type: () => PermissionResponse,
     description: 'Información del permiso asociado',
     required: false,
     nullable: true,
@@ -55,7 +53,6 @@ export class RolePermissionResponse {
 
 export class PaginatedRolePermissionsResponse {
   @ApiProperty({
-    type: [RolePermissionResponse],
     description: 'Listado de asociaciones rol-permiso de la página actual',
   })
   data!: RolePermissionResponse[];

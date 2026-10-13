@@ -103,7 +103,6 @@ export class Book {
   deletedAt?: Date | null;
 
   @ApiProperty({
-    type: () => Category,
     description: 'Categoría del libro (opcional, presente en includes)',
     required: false,
     nullable: true,
@@ -111,7 +110,6 @@ export class Book {
   category?: Category | null;
 
   @ApiProperty({
-    type: () => Subcategory,
     description: 'Subcategoría del libro (opcional, presente en includes)',
     required: false,
     nullable: true,
@@ -119,7 +117,6 @@ export class Book {
   subcategory?: Subcategory | null;
 
   @ApiProperty({
-    type: () => Publisher,
     description: 'Editorial del libro (opcional, presente en includes)',
     required: false,
     nullable: true,

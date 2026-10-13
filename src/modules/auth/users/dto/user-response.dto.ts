@@ -67,7 +67,6 @@ export class UserResponse {
 
 export class PaginatedUsersResponse {
   @ApiProperty({
-    type: [UserResponse],
     description: 'Listado de usuarios de la página actual',
   })
   data!: UserResponse[];

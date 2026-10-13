@@ -53,7 +53,6 @@ export class NotificationResponse {
 
 export class PaginatedNotificationsResponse {
   @ApiProperty({
-    type: [NotificationResponse],
     description: 'Listado de notificaciones de la página actual',
   })
   data!: NotificationResponse[];

@@ -3,7 +3,7 @@ import { LoanStatus } from '../../../../../generated/prisma/enums.js';
 
 export class ChangeLoanStatusDto {
   @ApiProperty({
-    example: LoanStatus.Devuelto,
+    example: LoanStatus.Finalizado,
     description: 'Nuevo estado del préstamo',
     enum: LoanStatus,
   })
