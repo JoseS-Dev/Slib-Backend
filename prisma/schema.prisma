@@ -393,7 +393,7 @@ model Fine {
   id Int @id @default(autoincrement())
   loanId Int
   userId Int
-  amount Decimal
+  amount Float
   reason String?
   status FineStatus @default(Pendiente)
   createdAt DateTime @default(now())

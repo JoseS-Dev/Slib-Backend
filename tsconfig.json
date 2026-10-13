@@ -7,7 +7,6 @@
     "moduleDetection": "force",
     "verbatimModuleSyntax": true,
     "resolvePackageJsonExports": true,
-    "baseUrl": "./",
     "outDir": "./dist",
 
     /* Seguridad de Tipos (Modo Estricto Avanzado) */
