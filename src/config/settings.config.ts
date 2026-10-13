@@ -34,6 +34,10 @@ export const settings = {
     limitWriteMax: env.LIMIT_WRITE_MAX,
     limitEmailWindowsMs: env.LIMIT_EMAIL_WINDOWS_MS,
     limitEmailMax: env.LIMIT_EMAIL_MAX,
+    messageEmail: env.MESSAGE_EMAIL,
+    messageLogin: env.MESSAGE_LOGIN,
+    messageRead: env.MESSAGE_READ,
+    messageWrite: env.MESSAGE_WRITE,
   },
   uploads: {
     uploadsDir: env.UPLOADS_DIR,

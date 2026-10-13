@@ -43,6 +43,10 @@ export const env = createEnv({
       .string()
       .default('image/jpeg,image/png,image/gif,application/pdf'),
     ALLOWED_FILE_EXTENSIONS: z.string().default('.jpg,.jpeg,.png,.gif,.pdf'),
+    MESSAGE_EMAIL: z.string().default('Demasiadas solicitudes de correo electrónico. Por favor, inténtelo de nuevo más tarde.'),
+    MESSAGE_LOGIN: z.string().default('Muchos Intentos de inicio de sesión fallidos. Por favor, inténtelo de nuevo más tarde.'),
+    MESSAGE_READ: z.string().default('Demasiadas solicitudes de lectura. Por favor, inténtelo de nuevo más tarde.'),
+    MESSAGE_WRITE: z.string().default('Demasiadas solicitudes de escritura. Por favor, inténtelo de nuevo más tarde.'),
   },
   client: {},
   clientPrefix: 'VITE_',
