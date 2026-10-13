@@ -69,7 +69,13 @@ export class RequestService {
     page: number = 1,
     limit: number = 10,
     status?: RequestStatus,
-  ): Promise<{ data: Request[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Request[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [requests, total] = await Promise.all([
       this.prisma.request.findMany({
         where: { ...(status ? { status } : {}) },
@@ -84,7 +90,7 @@ export class RequestService {
       this.prisma.request.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: requests, total, totalPages };
+    return { data: requests, total, page, limit, totalPages };
   }
 
   async findAllByUser(
@@ -92,7 +98,13 @@ export class RequestService {
     page: number = 1,
     limit: number = 10,
     status?: RequestStatus,
-  ): Promise<{ data: Request[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Request[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     // Se verifica que exista el usuario
     const existingUser = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -117,7 +129,7 @@ export class RequestService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: requests, total, totalPages };
+    return { data: requests, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Request> {

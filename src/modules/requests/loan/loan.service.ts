@@ -71,7 +71,13 @@ export class LoanService {
     page: number = 1,
     limit: number = 10,
     status?: LoanStatus,
-  ): Promise<{ data: Loan[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Loan[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [loans, total] = await Promise.all([
       this.prisma.loan.findMany({
         where: { ...(status ? { status } : {}) },
@@ -88,7 +94,7 @@ export class LoanService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: loans, total, totalPages };
+    return { data: loans, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Loan> {

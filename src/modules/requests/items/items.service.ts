@@ -30,7 +30,7 @@ export class ItemsService {
     return newItem;
   }
 
-  async findAll(requestId: number, page: number = 1, limit: number = 10) : Promise<{data: Item[], total: number, totalPages: number}> {
+  async findAll(requestId: number, page: number = 1, limit: number = 10) : Promise<{data: Item[], total: number, page: number, limit: number, totalPages: number}> {
     // Se verifica que exista la solicitud en cuestión
     const existingRequest = await this.prisma.request.findUnique({
       where: { id: requestId },
@@ -49,7 +49,7 @@ export class ItemsService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: items, total, totalPages };
+    return { data: items, total, page, limit, totalPages };
   }
 
   async findOne(id: number) : Promise<Item> {

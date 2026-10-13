@@ -41,7 +41,7 @@ export class FineService {
     return newFine;
   }
 
-  async findAll(page: number = 1, limit: number = 10, status?: FineStatus) : Promise<{data: Fine[], total: number, totalPages: number}> {
+  async findAll(page: number = 1, limit: number = 10, status?: FineStatus) : Promise<{data: Fine[], total: number, page: number, limit: number, totalPages: number}> {
     const [fines, total] = await Promise.all([
       this.prisma.fine.findMany({
         where: { ...(status ? { status } : {}) },
@@ -57,10 +57,10 @@ export class FineService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: fines, total, totalPages };
+    return { data: fines, total, page, limit, totalPages };
   }
 
-  async findAllByUser(userId: number, page: number = 1, limit: number = 10, status?: FineStatus) : Promise<{data: Fine[], total: number, totalPages: number}> {
+  async findAllByUser(userId: number, page: number = 1, limit: number = 10, status?: FineStatus) : Promise<{data: Fine[], total: number, page: number, limit: number, totalPages: number}> {
     // Se verifica que exista el usuario
     const existingUser = await this.prisma.extended.user.findUnique({
       where: { id: userId },
@@ -81,7 +81,7 @@ export class FineService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: fines, total, totalPages };
+    return { data: fines, total, page, limit, totalPages };
   }
 
   async findOne(id: number) : Promise<Fine> {
