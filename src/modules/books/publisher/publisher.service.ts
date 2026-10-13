@@ -48,7 +48,13 @@ export class PublisherService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Publisher[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Publisher[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [publishers, total] = await Promise.all([
       this.prisma.extended.publisher.findMany({
         skip: (page - 1) * limit,
@@ -61,7 +67,7 @@ export class PublisherService {
       this.prisma.extended.publisher.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: publishers, total, totalPages };
+    return { data: publishers, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Publisher> {

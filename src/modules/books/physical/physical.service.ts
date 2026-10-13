@@ -52,7 +52,13 @@ export class PhysicalService {
     page: number = 1,
     limit: number = 10,
     status?: PhysicalCopyStatus,
-  ): Promise<{ data: Physical[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Physical[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [physicalCopies, total] = await Promise.all([
       this.prisma.extended.physicalCopy.findMany({
         where: { ...(status ? { status } : {}) },
@@ -66,7 +72,7 @@ export class PhysicalService {
       this.prisma.extended.physicalCopy.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: physicalCopies, total, totalPages };
+    return { data: physicalCopies, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Physical> {

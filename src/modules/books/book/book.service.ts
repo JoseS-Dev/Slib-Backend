@@ -85,7 +85,13 @@ export class BookService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Book[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [books, total] = await Promise.all([
       this.prisma.extended.book.findMany({
         skip: (page - 1) * limit,
@@ -105,14 +111,20 @@ export class BookService {
       this.prisma.extended.book.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: books, total, totalPages };
+    return { data: books, total, page, limit, totalPages };
   }
 
   async findAllByCategory(
     categoryId: number,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Book[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [books, total] = await Promise.all([
       this.prisma.extended.book.findMany({
         where: { categoryId },
@@ -135,14 +147,20 @@ export class BookService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: books, total, totalPages };
+    return { data: books, total, page, limit, totalPages };
   }
 
   async findAllBySubcategory(
     subcategoryId: number,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Book[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [books, total] = await Promise.all([
       this.prisma.extended.book.findMany({
         where: { subcategoryId },
@@ -165,14 +183,20 @@ export class BookService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: books, total, totalPages };
+    return { data: books, total, page, limit, totalPages };
   }
 
   async findAllByPublisher(
     publisherId: number,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Book[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Book[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [books, total] = await Promise.all([
       this.prisma.extended.book.findMany({
         where: { publisherId },
@@ -195,7 +219,7 @@ export class BookService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: books, total, totalPages };
+    return { data: books, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Book> {

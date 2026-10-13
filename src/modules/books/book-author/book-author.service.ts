@@ -60,7 +60,13 @@ export class BookAuthorService {
     bookId: number,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: BookAuthor[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: BookAuthor[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     // Se verifica que exista el libro
     const existingBook = await this.prisma.extended.book.findUnique({
       where: { id: bookId },
@@ -86,14 +92,20 @@ export class BookAuthorService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: relations, total, totalPages };
+    return { data: relations, total, page, limit, totalPages };
   }
 
   async findAllByAuthor(
     authorId: number,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: BookAuthor[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: BookAuthor[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     // Se verifica que exista el autor
     const existingAuthor = await this.prisma.extended.author.findUnique({
       where: { id: authorId },
@@ -119,7 +131,7 @@ export class BookAuthorService {
       }),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: relations, total, totalPages };
+    return { data: relations, total, page, limit, totalPages };
   }
 
   async remove(bookId: number, authorId: number): Promise<{ message: string }> {

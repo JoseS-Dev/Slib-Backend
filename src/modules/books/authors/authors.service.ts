@@ -69,7 +69,13 @@ export class AuthorsService {
   async findAll(
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ data: Author[]; total: number; totalPages: number }> {
+  ): Promise<{
+    data: Author[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const [authors, total] = await Promise.all([
       this.prisma.extended.author.findMany({
         skip: (page - 1) * limit,
@@ -93,7 +99,7 @@ export class AuthorsService {
       this.prisma.extended.author.count(),
     ]);
     const totalPages = Math.ceil(total / limit);
-    return { data: authors, total, totalPages };
+    return { data: authors, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<Author> {
